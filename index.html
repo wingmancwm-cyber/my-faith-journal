@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f5f0e6">
+  <meta name="description" content="恩典手帳：記錄靈修、讀經與信仰閱讀。">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <link rel="stylesheet" href="./style.css">
+  <title>恩典手帳</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-mark">✦</div>
+      <div><div class="brand-name">恩典手帳</div><div class="brand-sub">MY FAITH JOURNAL</div></div>
+      <button class="round-action" id="installHint" aria-label="安裝提示" title="加入主畫面">＋</button>
+    </header>
+
+    <main id="appMain">
+      <section class="page active" id="page-home" aria-labelledby="homeTitle">
+        <div class="eyebrow">A QUIET MOMENT WITH GOD</div>
+        <h1 id="homeTitle">今天，也留一點<br>時間給信仰。</h1>
+        <p class="intro">在忙碌的日子裡，慢慢整理心情，記下恩典。</p>
+        <div class="date-card">
+          <span class="date-label">今天</span>
+          <strong id="todayDate">—</strong>
+          <span class="tiny-leaf">❧</span>
+        </div>
+        <div class="section-heading"><h2>每日靈修</h2><span class="soft-tag">DAILY DEVOTION</span></div>
+        <article class="feature-card devotion-card">
+          <div class="card-icon">☼</div>
+          <div><h3>給心靈一點安靜</h3><p>預留片刻，閱讀、默想，與上帝相遇。</p></div>
+          <button class="text-arrow" data-go="records">開始記錄 <span>→</span></button>
+        </article>
+        <div class="section-heading"><h2>讀經進度</h2><span class="soft-tag">BIBLE READING</span></div>
+        <article class="progress-card">
+          <div class="progress-top"><div><span class="muted">全本聖經</span><h3>尚未開始記錄</h3></div><span class="progress-number">0%</span></div>
+          <div class="progress-track"><span style="width:0%"></span></div>
+          <div class="progress-foot"><span>舊約 0 / 929</span><span>新約 0 / 260</span></div>
+          <button class="text-arrow" data-go="bible">前往讀經紀錄 <span>→</span></button>
+        </article>
+        <div class="section-heading"><h2>快速前往</h2></div>
+        <div class="quick-grid">
+          <button class="quick-card" data-go="records"><span>✎</span><b>靈修紀錄</b><small>寫下今天的領受</small></button>
+          <button class="quick-card" data-go="bible"><span>▤</span><b>讀經進度</b><small>整理閱讀章節</small></button>
+          <button class="quick-card" data-go="library"><span>❧</span><b>知識收藏</b><small>書籍與資源</small></button>
+          <button class="quick-card" data-go="settings"><span>☷</span><b>我的手帳</b><small>設定與備份</small></button>
+        </div>
+        <p class="footnote">「你們要休息，要知道我是神。」— 詩篇 46:10</p>
+      </section>
+
+      <section class="page" id="page-records">
+        <div class="eyebrow">REFLECTION & NOTES</div><h1>紀錄</h1>
+        <p class="intro">把每天的感動與思考，安靜地收藏起來。</p>
+        <div class="segmented"><button class="selected">靈修</button><button>讀經</button><button>閱讀</button></div>
+        <div class="empty-state"><div class="empty-illustration">✎</div><h2>你的第一篇紀錄，等候你寫下</h2><p>日後可以在這裡新增文字、圖片、經文、分類與標籤，並搜尋及收藏筆記。</p><span class="soft-tag">第二階段開放記錄功能</span></div>
+      </section>
+
+      <section class="page" id="page-bible">
+        <div class="eyebrow">SCRIPTURE JOURNEY</div><h1>讀經進度</h1>
+        <p class="intro">一步一步閱讀，在經文中累積信仰的足跡。</p>
+        <div class="bible-total"><div><span class="muted">全本聖經</span><strong>0 <small>/ 1,189 章</small></strong></div><div class="total-percent">0%</div></div>
+        <div class="progress-track"><span style="width:0%"></span></div>
+        <div class="testament-row">
+          <div class="testament-card"><span>舊約</span><strong>0 / 929</strong><small>39 卷書</small></div>
+          <div class="testament-card"><span>新約</span><strong>0 / 260</strong><small>27 卷書</small></div>
+        </div>
+        <div class="note-panel"><b>讀經功能設計已確定</b><p>下一階段會加入 66 卷書、逐章點選／取消、每卷及全本即時進度。只記錄章節是否已讀，不記錄日期；進度會儲存在此 iPhone。</p></div>
+        <p class="small-note">目前畫面只作介面預覽，尚未開始儲存讀經進度。</p>
+      </section>
+
+      <section class="page" id="page-library">
+        <div class="eyebrow">GROW & COLLECT</div><h1>知識庫</h1>
+        <p class="intro">收藏值得重讀的內容，讓信仰學習慢慢累積。</p>
+        <div class="library-list">
+          <article class="library-item"><span class="library-icon">✧</span><div><b>靈修筆記</b><small>整理靈修中的想法與領受</small></div><span>→</span></article>
+          <article class="library-item"><span class="library-icon">▤</span><div><b>屬靈書籍</b><small>已閱讀與推薦閱讀清單</small></div><span>→</span></article>
+          <article class="library-item"><span class="library-icon">♡</span><div><b>信仰資源</b><small>Instagram、Threads、Podcast、網站</small></div><span>→</span></article>
+          <article class="library-item"><span class="library-icon">⌁</span><div><b>經文收藏</b><small>連結經文與相關筆記</small></div><span>→</span></article>
+        </div>
+        <div class="empty-state compact"><h2>慢慢建立你的知識角落</h2><p>以上分類先作為功能入口預覽，資料新增及管理將於後續階段完成。</p></div>
+      </section>
+
+      <section class="page" id="page-settings">
+        <div class="eyebrow">YOUR PERSONAL SPACE</div><h1>我的手帳</h1>
+        <p class="intro">這是屬於你的私人信仰紀錄空間。</p>
+        <div class="settings-card">
+          <div class="settings-row"><div><b>資料儲存方式</b><small>只儲存在目前 iPhone 的瀏覽器</small></div><span class="status-pill">本機</span></div>
+          <div class="settings-row"><div><b>雲端同步</b><small>不使用雲端帳戶或同步服務</small></div><span class="status-pill">關閉</span></div>
+          <div class="settings-row"><div><b>備份與還原</b><small>稍後加入完整 ZIP 備份功能</small></div><span>→</span></div>
+          <div class="settings-row"><div><b>關於恩典手帳</b><small>第一階段介面版本</small></div><span>1.0</span></div>
+        </div>
+        <p class="privacy-note">提醒：目前這個版本尚未儲存個人紀錄。日後正式加入資料功能後，請定期自行匯出備份；清除 Safari 網站資料可能會刪除本機紀錄。</p>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="主要導覽">
+      <button class="nav-item active" data-page="home"><span>⌂</span><small>首頁</small></button>
+      <button class="nav-item" data-page="records"><span>✎</span><small>紀錄</small></button>
+      <button class="nav-item" data-page="bible"><span>▤</span><small>讀經</small></button>
+      <button class="nav-item" data-page="library"><span>❧</span><small>知識庫</small></button>
+      <button class="nav-item" data-page="settings"><span>☷</span><small>我的</small></button>
+    </nav>
+  </div>
+  <script src="./app.js"></script>
+</body>
+</html>
