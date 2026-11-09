@@ -246,6 +246,13 @@ function createBibleInterface() {
       </div>
     </div>
 
+        <div class="bible-book-progress-section">
+      <div class="section-heading">
+        <h2>書卷閱讀進度</h2>
+        <span class="soft-tag">BOOK PROGRESS</span>
+      </div>
+      <div id="bibleBookProgressList"></div>
+    </div>
     <div class="chapter-section">
       <div class="section-heading">
         <h2>選擇已讀章數</h2>
@@ -285,6 +292,28 @@ function createBibleInterface() {
   document.getElementById("bibleBookSelect").addEventListener("change", event => {
     selectedBookId = event.target.value;
     renderChapterGrid();
+  });  document.getElementById("bibleBookProgressList").addEventListener("click", event => {
+    const button = event.target.closest("[data-book-id]");
+    if (!button) return;
+
+    const book = bibleBooks.find(item => item.id === button.dataset.bookId);
+    if (!book) return;
+
+    selectedBookId = book.id;
+    selectedTestament = book.testament;
+
+    panel.querySelectorAll("[data-testament]").forEach(tab => {
+      tab.classList.toggle("selected", tab.dataset.testament === selectedTestament);
+    });
+
+    populateBookSelect();
+    renderBookProgressList();
+    renderChapterGrid();
+
+    document.querySelector(".chapter-section")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
   });
 }
 
@@ -315,7 +344,84 @@ function getBookReadCount(book) {
     ? bibleProgress[book.id].length
     : 0;
 }
+function renderBookProgressList() {
+  const container = document.getElementById("bibleBookProgressList");
+  if (!container) return;
 
+  // 保留使用者已展開或收起的狀態
+  const oldStates = {};
+  container.querySelectorAll("details[data-testament]").forEach(group => {
+    oldStates[group.dataset.testament] = group.open;
+  });
+
+  const testaments = [
+    { id: "OT", name: "舊約", total: 929, defaultOpen: true },
+    { id: "NT", name: "新約", total: 260, defaultOpen: false }
+  ];
+
+  container.innerHTML = testaments.map(testament => {
+    const books = bibleBooks.filter(book => book.testament === testament.id);
+
+    const readTotal = books.reduce(
+      (sum, book) => sum + getBookReadCount(book),
+      0
+    );
+
+    const percent = Math.round((readTotal / testament.total) * 100);
+
+    const isOpen = oldStates[testament.id] !== undefined
+      ? oldStates[testament.id]
+      : testament.defaultOpen;
+
+    const rows = books.map(book => {
+      const read = getBookReadCount(book);
+      const bookPercent = Math.round((read / book.chapters) * 100);
+      const completed = read === book.chapters;
+
+      return `
+        <button
+          type="button"
+          class="bible-book-progress-item${selectedBookId === book.id ? " is-selected" : ""}"
+          data-book-id="${book.id}"
+          aria-label="選擇${book.name}，已讀${read}章，共${book.chapters}章"
+        >
+          <span class="bible-book-progress-info">
+            <span class="bible-book-progress-name">
+              ${book.name}
+              ${completed ? '<span class="book-completed">✓</span>' : ""}
+            </span>
+            <span class="bible-book-progress-count">${read} / ${book.chapters} 章</span>
+          </span>
+          <span class="bible-book-progress-bar">
+            <span style="width:${bookPercent}%"></span>
+          </span>
+          <span class="bible-book-progress-percent">${bookPercent}%</span>
+        </button>
+      `;
+    }).join("");
+
+    return `
+      <details class="bible-book-group"
+        data-testament="${testament.id}"
+        ${isOpen ? "open" : ""}
+      >
+        <summary>
+          <span class="bible-group-title">
+            ${testament.name}
+            <small>${books.length} 卷書</small>
+          </span>
+          <span class="bible-group-total">
+            ${readTotal} / ${testament.total} 章
+            <small>${percent}%</small>
+          </span>
+        </summary>
+        <div class="bible-book-progress-list">
+          ${rows}
+        </div>
+      </details>
+    `;
+  }).join("");
+}
 function renderChapterGrid() {
   const book = bibleBooks.find(item => item.id === selectedBookId);
   if (!book) return;
@@ -453,6 +559,7 @@ function updateAllBibleProgress() {
     testamentCards[1].textContent = `${newRead} / ${newTotal}`;
   }
 
+    renderBookProgressList();
   renderChapterGrid();
 }
 
