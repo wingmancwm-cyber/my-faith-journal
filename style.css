@@ -195,3 +195,146 @@
     border-radius: 9px;
   }
 }
+/* 66卷書閱讀進度 */
+
+.bible-book-progress-section {
+  margin-top: 26px;
+}
+
+.bible-book-group {
+  margin: 12px 0;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.bible-book-group summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.bible-book-group summary::-webkit-details-marker {
+  display: none;
+}
+
+.bible-book-group summary::after {
+  content: "＋";
+  color: var(--sage);
+  font-size: 18px;
+  margin-left: 4px;
+}
+
+.bible-book-group[open] summary::after {
+  content: "－";
+}
+
+.bible-group-title {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.bible-group-title small,
+.bible-group-total small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: normal;
+}
+
+.bible-group-total {
+  color: var(--ink);
+  font-size: 13px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.bible-book-progress-list {
+  padding: 0 12px 12px;
+}
+
+.bible-book-progress-item {
+  display: block;
+  width: 100%;
+  padding: 12px 10px;
+  margin-top: 5px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.bible-book-progress-item.is-selected {
+  background: var(--sage-light);
+  border-color: var(--sage);
+}
+
+.bible-book-progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.bible-book-progress-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.bible-book-progress-count {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.bible-book-progress-bar {
+  display: block;
+  height: 5px;
+  background: var(--sand);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.bible-book-progress-bar span {
+  display: block;
+  height: 100%;
+  background: var(--sage);
+  border-radius: 10px;
+}
+
+.bible-book-progress-percent {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 11px;
+  text-align: right;
+}
+
+.book-completed {
+  color: var(--sage);
+  margin-left: 5px;
+  font-weight: bold;
+}
+
+@media (max-width: 480px) {
+  .bible-book-group summary {
+    padding: 14px 12px;
+  }
+
+  .bible-book-progress-list {
+    padding: 0 8px 10px;
+  }
+
+  .bible-book-progress-item {
+    padding: 11px 8px;
+  }
+}
