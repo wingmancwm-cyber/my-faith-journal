@@ -1,4 +1,4 @@
-const CACHE_NAME = "faith-journal-shell-v8";
+const CACHE_NAME = "faith-journal-shell-v9";
 
 const FILES = [
   "./",
