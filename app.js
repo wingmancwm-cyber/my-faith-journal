@@ -144,6 +144,7 @@ const DB_VERSION = 5;
 
 const BIBLE_STORE_NAME = "bibleProgress";
 const DEVOTION_STORE_NAME = "devotionRecords";
+const NOTES_STORE_NAME = "notes";
 
 let db = null;
 let bibleProgress = {};
