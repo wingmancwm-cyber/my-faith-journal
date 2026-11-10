@@ -1006,6 +1006,213 @@ async function deleteSermonRecord(id) {
     console.error(error);
   }
 }
+
+// ==============================
+// 閱讀紀錄：顯示列表
+// ==============================
+
+async function renderReadingRecords() {
+  const container = document.getElementById("devotion-record-list");
+  if (!container || !databaseReady) return;
+
+  try {
+    const notes = await getAllNotes();
+    const readingRecords = notes.filter(
+      note => note.category === "reading"
+    );
+
+    container.innerHTML = `
+      <div class="devotion-list-heading">
+        <div>
+          <h3>閱讀紀錄</h3>
+          <p>收藏每一本屬靈書籍的閱讀心得</p>
+        </div>
+        <button type="button" class="primary-button" id="addReadingButton">
+          ＋ 新增閱讀筆記
+        </button>
+      </div>
+
+      ${
+        readingRecords.length === 0
+          ? `
+            <div class="empty-state">
+              <div class="empty-state-icon">📚</div>
+              <h3>尚未有閱讀筆記</h3>
+              <p>記下每一本書帶給你的啟發與反思。</p>
+            </div>
+          `
+          : readingRecords.map(note => `
+            <button
+              type="button"
+              class="devotion-record-item reading-record-item"
+              data-reading-id="${escapeDevotionText(note.id)}"
+            >
+              <h3>${escapeDevotionText(note.title || "未命名書籍")}</h3>
+              <p class="devotion-record-preview">
+                作者：${escapeDevotionText(note.author || "未填寫")}
+              </p>
+              <p class="devotion-record-preview">
+                ${escapeDevotionText(note.content || "")}
+              </p>
+            </button>
+          `).join("")
+      }
+    `;
+
+    document.getElementById("addReadingButton")
+      .addEventListener("click", () => {
+        openReadingEditor(null);
+      });
+
+    container.querySelectorAll("[data-reading-id]").forEach(button => {
+      button.addEventListener("click", () => {
+        openReadingEditor(button.dataset.readingId);
+      });
+    });
+
+  } catch (error) {
+    container.textContent = "暫時無法載入閱讀筆記。";
+    console.error(error);
+  }
+}
+
+
+// ==============================
+// 閱讀紀錄：新增及編輯
+// ==============================
+
+async function openReadingEditor(id) {
+  const container = document.getElementById("devotion-record-list");
+  if (!container) return;
+
+  const note = id ? await getNote(id) : null;
+
+  container.innerHTML = `
+    <div class="devotion-editor-card reading-editor-card">
+
+      <button type="button" class="editor-back" id="backToReadingList">
+        ← 返回閱讀紀錄
+      </button>
+
+      <h3>${note ? "編輯閱讀筆記" : "新增閱讀筆記"}</h3>
+
+      <label for="readingTitle">書名</label>
+      <input
+        id="readingTitle"
+        type="text"
+        placeholder="輸入書名"
+        value="${escapeDevotionText(note?.title || "")}"
+      >
+
+      <label for="readingAuthor">作者</label>
+      <input
+        id="readingAuthor"
+        type="text"
+        placeholder="輸入作者姓名"
+        value="${escapeDevotionText(note?.author || "")}"
+      >
+
+      <label for="readingContent">閱讀筆記</label>
+      <textarea
+        id="readingContent"
+        rows="8"
+        placeholder="記下書中的重點、啟發及個人反思..."
+      >${escapeDevotionText(note?.content || "")}</textarea>
+
+      <button type="button" class="primary-button" id="saveReadingButton">
+        儲存閱讀筆記
+      </button>
+
+      ${
+        note
+          ? `<button type="button" class="delete-button" id="deleteReadingButton">刪除這篇筆記</button>`
+          : ""
+      }
+
+      <p id="readingSaveStatus" class="devotion-save-status"></p>
+    </div>
+  `;
+
+  document.getElementById("backToReadingList")
+    .addEventListener("click", renderReadingRecords);
+
+  const saveButton = document.getElementById("saveReadingButton");
+
+  if (id) {
+    saveButton.dataset.editingId = id;
+  }
+
+  saveButton.addEventListener("click", saveReadingRecord);
+
+  if (note) {
+    document.getElementById("deleteReadingButton")
+      .addEventListener("click", () => {
+        deleteReadingRecord(id);
+      });
+  }
+}
+
+
+// ==============================
+// 閱讀紀錄：儲存
+// ==============================
+
+async function saveReadingRecord() {
+  const title = document.getElementById("readingTitle").value.trim();
+  const author = document.getElementById("readingAuthor").value.trim();
+  const content = document.getElementById("readingContent").value.trim();
+  const status = document.getElementById("readingSaveStatus");
+  const saveButton = document.getElementById("saveReadingButton");
+
+  if (!title || !content) {
+    status.textContent = "請填寫書名及閱讀筆記。";
+    return;
+  }
+
+  const newId =
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : Date.now().toString();
+
+  const note = {
+    id: saveButton.dataset.editingId || newId,
+    category: "reading",
+    title,
+    author,
+    content
+  };
+
+  saveButton.disabled = true;
+  status.textContent = "正在儲存……";
+
+  try {
+    await saveNote(note);
+    await renderReadingRecords();
+  } catch (error) {
+    status.textContent = "儲存失敗，請稍後再試。";
+    saveButton.disabled = false;
+    console.error(error);
+  }
+}
+
+
+// ==============================
+// 閱讀紀錄：刪除
+// ==============================
+
+async function deleteReadingRecord(id) {
+  if (!confirm("確定要刪除這篇閱讀筆記嗎？")) return;
+
+  try {
+    await deleteNote(id);
+    await renderReadingRecords();
+  } catch (error) {
+    alert("刪除失敗，請稍後再試。");
+    console.error(error);
+  }
+}
+
 function escapeDevotionText(value) {
   return String(value)
     .replace(/&/g, "&amp;")
@@ -1018,6 +1225,7 @@ function escapeDevotionText(value) {
 // ==============================
 // 紀錄頁面：五大分類切換
 // ==============================
+
 
 function renderRecordsCategory(category) {
   selectedRecordCategory = category;
@@ -1039,12 +1247,19 @@ function renderRecordsCategory(category) {
     renderDevotionRecords();
     return;
   }
+
   // 講道：顯示講道紀錄
   if (category === "sermon") {
     renderSermonRecords();
     return;
   }
-  
+
+  // 閱讀：顯示閱讀筆記
+  if (category === "reading") {
+    renderReadingRecords();
+    return;
+  }
+
   // 讀經：連接現有讀經功能
   if (category === "bible") {
     container.innerHTML = `
@@ -1065,35 +1280,17 @@ function renderRecordsCategory(category) {
     return;
   }
 
-  const messages = {
-    sermon: {
-      icon: "✎",
-      title: "記下每一次聽道的領受",
-      description: "在這裡整理講道標題、日期、講員及筆記。"
-    },
-    reading: {
-      icon: "📚",
-      title: "收藏你的屬靈閱讀紀錄",
-      description: "記錄書名、作者、閱讀狀態及閱讀筆記。"
-    },
-    other: {
-      icon: "✧",
-      title: "留下一些其他筆記",
-      description: "記下生活中的信仰反思、想法及其他內容。"
-    }
-  };
-
-  const item = messages[category];
-  if (!item) return;
-
-  container.innerHTML = `
-    <div class="empty-state">
-      <div class="empty-illustration">${item.icon}</div>
-      <h2>${item.title}</h2>
-      <p>${item.description}</p>
-      <p>下一階段將加入新增及管理紀錄功能。</p>
-    </div>
-  `;
+  // 其他：暫時保留提示頁面
+  if (category === "other") {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-illustration">✧</div>
+        <h2>留下一些其他筆記</h2>
+        <p>記下生活中的信仰反思、想法及其他內容。</p>
+        <p>下一階段將加入新增及管理紀錄功能。</p>
+      </div>
+    `;
+  }
 }
 
 // 分類按鈕操作
