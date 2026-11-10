@@ -32,7 +32,7 @@
         <article class="feature-card devotion-card">
           <div class="card-icon">☼</div>
           <div><h3>給心靈一點安靜</h3><p>預留片刻，閱讀、默想，與上帝相遇。</p></div>
-          <button class="text-arrow" data-go="records">開始記錄 <span>→</span></button>
+          <button class="text-arrow" data-go="devotion">開始記錄 <span>→</span></button>
         </article>
         <div class="section-heading"><h2>讀經進度</h2><span class="soft-tag">BIBLE READING</span></div>
         <article class="progress-card">
@@ -43,19 +43,36 @@
         </article>
         <div class="section-heading"><h2>快速前往</h2></div>
         <div class="quick-grid">
-          <button class="quick-card" data-go="records"><span>✎</span><b>靈修紀錄</b><small>寫下今天的領受</small></button>
+          <button class="quick-card" data-go="devotion"><span>✎</span><b>每日靈修</b><small>月曆打卡及靈修筆記</small></button>
           <button class="quick-card" data-go="bible"><span>▤</span><b>讀經進度</b><small>整理閱讀章節</small></button>
           <button class="quick-card" data-go="library"><span>❧</span><b>知識收藏</b><small>書籍與資源</small></button>
           <button class="quick-card" data-go="settings"><span>☷</span><b>我的手帳</b><small>設定與備份</small></button>
         </div>
         <p class="footnote">「你們要休息，要知道我是神。」— 詩篇 46:10</p>
       </section>
+      <section class="page" id="page-devotion">
+        <div class="eyebrow">DAILY DEVOTION</div>
+        <h1>每日靈修</h1>
+        <p class="intro">在每一天留下與上帝相遇的足跡。</p>
 
+        <div id="devotion-calendar-view">
+          <div id="devotion-calendar"></div>
+        </div>
+
+        <div id="devotion-editor-view" hidden>
+          <div id="devotion-editor"></div>
+        </div>
+      </section>
       <section class="page" id="page-records">
         <div class="eyebrow">REFLECTION & NOTES</div><h1>紀錄</h1>
         <p class="intro">把每天的感動與思考，安靜地收藏起來。</p>
-        <div class="segmented"><button class="selected">靈修</button><button>讀經</button><button>閱讀</button></div>
-        <div class="empty-state"><div class="empty-illustration">✎</div><h2>你的第一篇紀錄，等候你寫下</h2><p>日後可以在這裡新增文字、圖片、經文、分類與標籤，並搜尋及收藏筆記。</p><span class="soft-tag">第二階段開放記錄功能</span></div>
+                <div class="segmented">
+          <button class="selected" type="button">靈修</button>
+          <button type="button" disabled>讀經</button>
+          <button type="button" disabled>閱讀</button>
+        </div>
+
+        <div id="devotion-record-list"></div>
       </section>
 
       <section class="page" id="page-bible">
