@@ -737,6 +737,59 @@ async function renderDevotionRecords() {
 
       return;
     }
+    // 顯示講道紀錄列表
+async function renderSermonRecords() {
+  const container = document.getElementById("devotion-record-list");
+  if (!container) return;
+
+  const notes = await getAllNotes();
+  const sermonRecords = notes.filter(note => note.category === "sermon");
+
+  container.innerHTML = `
+    <div class="devotion-list-heading">
+      <div>
+        <h3>講道紀錄</h3>
+        <p>整理每一次聽道的領受與反思</p>
+      </div>
+      <button class="primary-button" id="addSermonButton">＋ 新增講道</button>
+    </div>
+
+    ${
+      sermonRecords.length === 0
+        ? `
+          <div class="empty-state">
+            <div class="empty-state-icon">✎</div>
+            <h3>尚未有講道紀錄</h3>
+            <p>把每一次聽道的重點和領受記錄下來。</p>
+          </div>
+        `
+        : sermonRecords.map(note => `
+          <button class="devotion-record-item sermon-record-item"
+                  data-sermon-id="${escapeDevotionText(note.id)}">
+            <div class="devotion-record-date">
+              ${escapeDevotionText(note.date || "")}
+            </div>
+            <h3>${escapeDevotionText(note.title || "未命名講道")}</h3>
+            <p class="devotion-record-preview">
+              講員：${escapeDevotionText(note.speaker || "未填寫")}
+            </p>
+            <p class="devotion-record-preview">
+              ${escapeDevotionText(note.content || "")}
+            </p>
+          </button>
+        `).join("")
+    }
+  `;
+
+  document.getElementById("addSermonButton")
+    ?.addEventListener("click", () => openSermonEditor(null));
+
+  container.querySelectorAll("[data-sermon-id]").forEach(button => {
+    button.addEventListener("click", () => {
+      openSermonEditor(button.dataset.sermonId);
+    });
+  });
+}
 
     container.innerHTML = `
       <div class="devotion-list-heading">
