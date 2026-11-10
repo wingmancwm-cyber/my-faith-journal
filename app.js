@@ -797,6 +797,89 @@ function escapeDevotionText(value) {
     .replace(/'/g, "&#039;");
 }
     
+// ==============================
+// 紀錄頁面：五大分類切換
+// ==============================
+
+function renderRecordsCategory(category) {
+  selectedRecordCategory = category;
+
+  const tabs = document.querySelectorAll("[data-record-category]");
+
+  tabs.forEach(button => {
+    button.classList.toggle(
+      "selected",
+      button.dataset.recordCategory === category
+    );
+  });
+
+  const container = document.getElementById("devotion-record-list");
+  if (!container) return;
+
+  // 靈修：顯示原有靈修紀錄
+  if (category === "devotion") {
+    renderDevotionRecords();
+    return;
+  }
+
+  // 讀經：連接現有讀經功能
+  if (category === "bible") {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-illustration">📖</div>
+        <h2>聖經閱讀進度</h2>
+        <p>你的 66 卷聖經閱讀進度已獨立儲存。</p>
+        <button type="button" class="text-arrow" id="openBiblePage">
+          前往讀經頁面 <span>→</span>
+        </button>
+      </div>
+    `;
+
+    document.getElementById("openBiblePage").addEventListener("click", () => {
+      showPage("bible");
+    });
+
+    return;
+  }
+
+  const messages = {
+    sermon: {
+      icon: "✎",
+      title: "記下每一次聽道的領受",
+      description: "在這裡整理講道標題、日期、講員及筆記。"
+    },
+    reading: {
+      icon: "📚",
+      title: "收藏你的屬靈閱讀紀錄",
+      description: "記錄書名、作者、閱讀狀態及閱讀筆記。"
+    },
+    other: {
+      icon: "✧",
+      title: "留下一些其他筆記",
+      description: "記下生活中的信仰反思、想法及其他內容。"
+    }
+  };
+
+  const item = messages[category];
+  if (!item) return;
+
+  container.innerHTML = `
+    <div class="empty-state">
+      <div class="empty-illustration">${item.icon}</div>
+      <h2>${item.title}</h2>
+      <p>${item.description}</p>
+      <p>下一階段將加入新增及管理紀錄功能。</p>
+    </div>
+  `;
+}
+
+// 分類按鈕操作
+document.querySelectorAll("[data-record-category]").forEach(button => {
+  button.addEventListener("click", () => {
+    renderRecordsCategory(button.dataset.recordCategory);
+  });
+});
+
 
 
 // ==============================
