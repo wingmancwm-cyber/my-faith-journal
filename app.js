@@ -216,7 +216,107 @@ function saveBibleProgress() {
       id: "chapters",
       value: bibleProgress
     });
+// ==============================
+// 每日靈修：資料庫操作
+// ==============================
 
+function getLocalDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function getDevotionRecord(date) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(
+      DEVOTION_STORE_NAME,
+      "readonly"
+    );
+
+    const store = transaction.objectStore(DEVOTION_STORE_NAME);
+    const request = store.get(date);
+
+    request.onsuccess = () => {
+      resolve(request.result || null);
+    };
+
+    request.onerror = () => {
+      reject(request.error || new Error("讀取靈修紀錄失敗。"));
+    };
+  });
+}
+
+function getAllDevotionRecords() {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(
+      DEVOTION_STORE_NAME,
+      "readonly"
+    );
+
+    const store = transaction.objectStore(DEVOTION_STORE_NAME);
+    const request = store.getAll();
+
+    request.onsuccess = () => {
+      const records = request.result || [];
+
+      records.sort((a, b) => b.date.localeCompare(a.date));
+
+      resolve(records);
+    };
+
+    request.onerror = () => {
+      reject(request.error || new Error("讀取靈修紀錄列表失敗。"));
+    };
+  });
+}
+
+function saveDevotionRecord(date, scripture, note) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(
+      DEVOTION_STORE_NAME,
+      "readwrite"
+    );
+
+    const store = transaction.objectStore(DEVOTION_STORE_NAME);
+
+    store.put({
+      date,
+      scripture,
+      note
+    });
+
+    transaction.oncomplete = () => resolve();
+
+    transaction.onerror = () => {
+      reject(transaction.error || new Error("儲存靈修紀錄失敗。"));
+    };
+
+    transaction.onabort = () => {
+      reject(transaction.error || new Error("儲存靈修紀錄中斷。"));
+    };
+  });
+}
+
+function deleteDevotionRecord(date) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(
+      DEVOTION_STORE_NAME,
+      "readwrite"
+    );
+
+    const store = transaction.objectStore(DEVOTION_STORE_NAME);
+
+    store.delete(date);
+
+    transaction.oncomplete = () => resolve();
+
+    transaction.onerror = () => {
+      reject(transaction.error || new Error("刪除靈修紀錄失敗。"));
+    };
+  });
+}
     transaction.oncomplete = () => resolve();
 
     transaction.onerror = () => {
