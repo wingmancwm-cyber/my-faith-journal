@@ -25,8 +25,8 @@ function showPage(name) {
   }
 
   if (name === "records" && databaseReady) {
-    renderDevotionRecords();
-  }
+  renderRecordsCategory(selectedRecordCategory);
+}
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
