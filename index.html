@@ -66,13 +66,37 @@
       <section class="page" id="page-records">
         <div class="eyebrow">REFLECTION & NOTES</div><h1>紀錄</h1>
         <p class="intro">把每天的感動與思考，安靜地收藏起來。</p>
-                <div class="segmented">
-          <button class="selected" type="button">靈修</button>
-          <button type="button" disabled>讀經</button>
-          <button type="button" disabled>閱讀</button>
-        </div>
+                
+<div class="segmented records-tabs">
+  <button
+    class="selected"
+    type="button"
+    data-record-category="devotion"
+  >靈修</button>
 
-        <div id="devotion-record-list"></div>
+  <button
+    type="button"
+    data-record-category="sermon"
+  >講道</button>
+
+  <button
+    type="button"
+    data-record-category="bible"
+  >讀經</button>
+
+  <button
+    type="button"
+    data-record-category="reading"
+  >閱讀</button>
+
+  <button
+    type="button"
+    data-record-category="other"
+  >其他</button>
+</div>
+
+<div id="devotion-record-list"></div>
+
       </section>
 
       <section class="page" id="page-bible">
