@@ -778,7 +778,15 @@ async function renderSermonRecords() {
             </p>
           </button>
         `).join("")
-    }
+    
+      document.getElementById("addSermonButton")
+    ?.addEventListener("click", () => openSermonEditor(null));
+    container.querySelectorAll("[data-sermon-id]").forEach(button => {
+    button.addEventListener("click", () => {
+      openSermonEditor(button.dataset.sermonId);
+    });
+  });
+  }
     // 開啟講道紀錄編輯畫面
 async function openSermonEditor(id) {
   const container = document.getElementById("devotion-record-list");
