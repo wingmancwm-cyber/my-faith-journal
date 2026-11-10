@@ -893,6 +893,9 @@ async function deleteSermonRecord(id) {
   document.getElementById("backToSermonList")
     ?.addEventListener("click", renderSermonRecords);
 
+if (id) {
+  document.getElementById("saveSermonButton").dataset.editingId = id;
+}
   document.getElementById("saveSermonButton")
     ?.addEventListener("click", saveSermonRecord);
 
