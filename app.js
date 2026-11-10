@@ -140,7 +140,7 @@ const bibleBooks = [
 // ==============================
 
 const DB_NAME = "MyFaithJournal";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 const BIBLE_STORE_NAME = "bibleProgress";
 const DEVOTION_STORE_NAME = "devotionRecords";
