@@ -566,6 +566,94 @@ async function openDevotionEditor(date) {
     }
   });
 }
+    // ==============================
+// 紀錄頁面：每日靈修列表
+// ==============================
+
+async function renderDevotionRecords() {
+  const container = document.getElementById("devotion-record-list");
+  if (!container || !databaseReady) return;
+
+  try {
+    const records = await getAllDevotionRecords();
+
+    if (records.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-illustration">✎</div>
+          <h2>你的第一篇靈修紀錄，等候你寫下</h2>
+          <p>在每日靈修月曆選擇日期，記下經文與領受。</p>
+          <button type="button" class="text-arrow" id="startFirstDevotion">
+            開始靈修記錄 <span>→</span>
+          </button>
+        </div>
+      `;
+
+      document.getElementById("startFirstDevotion").addEventListener("click", () => {
+        showPage("devotion");
+      });
+
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="devotion-list-heading">
+        <h2>我的靈修紀錄</h2>
+        <span>${records.length} 篇紀錄</span>
+      </div>
+
+      <div class="devotion-records">
+        ${records.map(record => {
+          const parts = record.date.split("-").map(Number);
+
+          const dateText = new Intl.DateTimeFormat("zh-Hant", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            weekday: "long"
+          }).format(new Date(parts[0], parts[1] - 1, parts[2]));
+
+          const preview = record.note
+            ? record.note.slice(0, 90)
+            : "尚未填寫筆記";
+
+          return `
+            <button
+              type="button"
+              class="devotion-record-item"
+              data-record-date="${record.date}"
+            >
+              <span class="devotion-record-date">${dateText}</span>
+              <strong>${escapeDevotionText(record.scripture || "未填寫經文")}</strong>
+              <span class="devotion-record-preview">${escapeDevotionText(preview)}${record.note && record.note.length > 90 ? "…" : ""}</span>
+              <span class="devotion-record-arrow">查看紀錄 →</span>
+            </button>
+          `;
+        }).join("")}
+      </div>
+    `;
+
+    container.querySelectorAll("[data-record-date]").forEach(button => {
+      button.addEventListener("click", () => {
+        showPage("devotion");
+        openDevotionEditor(button.dataset.recordDate);
+      });
+    });
+
+  } catch (error) {
+    container.textContent = "暫時無法載入靈修紀錄，請稍後再試。";
+    console.error(error);
+  }
+}
+
+function escapeDevotionText(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
     transaction.oncomplete = () => resolve();
 
     transaction.onerror = () => {
