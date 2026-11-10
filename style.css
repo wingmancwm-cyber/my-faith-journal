@@ -691,3 +691,68 @@
     min-height: 43px;
   }
 }
+/* 講道紀錄列表 */
+.sermon-record-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  background: var(--card, #fffdf8);
+  border: 1px solid #e8e0d3;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.sermon-record-item h3 {
+  margin: 8px 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.sermon-record-item p {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+/* 講道紀錄輸入欄位 */
+.sermon-editor-card label {
+  display: block;
+  margin: 16px 0 6px;
+  font-size: 0.9rem;
+  color: #6f705f;
+}
+
+.sermon-editor-card input,
+.sermon-editor-card textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ded8ca;
+  border-radius: 10px;
+  background: #fffdf8;
+  color: #45463e;
+  font: inherit;
+  font-size: 16px;
+}
+
+.sermon-editor-card textarea {
+  resize: vertical;
+  line-height: 1.7;
+  min-height: 160px;
+}
+
+.sermon-editor-card input:focus,
+.sermon-editor-card textarea:focus {
+  outline: 2px solid #aab49a;
+  border-color: #aab49a;
+}
+
+/* 按鈕間距 */
+.sermon-editor-card .primary-button,
+.sermon-editor-card .delete-button {
+  width: 100%;
+  margin-top: 16px;
+}
