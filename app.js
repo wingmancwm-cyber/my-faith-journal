@@ -216,6 +216,7 @@ function saveBibleProgress() {
       id: "chapters",
       value: bibleProgress
     });
+        
 // ==============================
 // 每日靈修：資料庫操作
 // ==============================
