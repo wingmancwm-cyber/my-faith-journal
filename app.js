@@ -317,6 +317,123 @@ function deleteDevotionRecord(date) {
     };
   });
 }
+    // ==============================
+// 每日靈修：月曆介面
+// ==============================
+
+async function showDevotionCalendar() {
+  const calendarView = document.getElementById("devotion-calendar-view");
+  const editorView = document.getElementById("devotion-editor-view");
+
+  if (!calendarView || !editorView) return;
+
+  calendarView.hidden = false;
+  editorView.hidden = true;
+
+  await renderDevotionCalendar();
+}
+
+async function renderDevotionCalendar() {
+  const container = document.getElementById("devotion-calendar");
+  if (!container || !databaseReady) return;
+
+  const records = await getAllDevotionRecords();
+  const recordedDates = new Set(records.map(record => record.date));
+
+  const firstDay = new Date(calendarYear, calendarMonth, 1).getDay();
+  const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+
+  const monthTitle = `${calendarYear}年${calendarMonth + 1}月`;
+
+  let dayCells = "";
+
+  for (let i = 0; i < firstDay; i++) {
+    dayCells += `<span class="calendar-empty"></span>`;
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = [
+      calendarYear,
+      String(calendarMonth + 1).padStart(2, "0"),
+      String(day).padStart(2, "0")
+    ].join("-");
+
+    const hasRecord = recordedDates.has(date);
+
+    dayCells += `
+      <button
+        type="button"
+        class="calendar-day${hasRecord ? " has-record" : ""}"
+        data-devotion-date="${date}"
+        aria-label="${calendarYear}年${calendarMonth + 1}月${day}日${hasRecord ? "，已有靈修紀錄" : ""}"
+      >
+        <span>${day}</span>
+        ${hasRecord ? '<small>✓</small>' : ""}
+      </button>
+    `;
+  }
+
+  container.innerHTML = `
+    <div class="devotion-calendar-card">
+      <div class="calendar-heading">
+        <button type="button" id="previousMonth" aria-label="上一個月">‹</button>
+        <h2>${monthTitle}</h2>
+        <button type="button" id="nextMonth" aria-label="下一個月">›</button>
+      </div>
+
+      <div class="calendar-weekdays">
+        <span>日</span>
+        <span>一</span>
+        <span>二</span>
+        <span>三</span>
+        <span>四</span>
+        <span>五</span>
+        <span>六</span>
+      </div>
+
+      <div class="calendar-days">
+        ${dayCells}
+      </div>
+
+      <p class="calendar-legend">
+        <span class="calendar-legend-mark">✓</span>
+        已完成靈修紀錄
+      </p>
+    </div>
+
+    <p class="calendar-hint">
+      選擇日期，記下當天閱讀的經文與領受。
+    </p>
+  `;
+
+  document.getElementById("previousMonth").addEventListener("click", () => {
+    calendarMonth--;
+
+    if (calendarMonth < 0) {
+      calendarMonth = 11;
+      calendarYear--;
+    }
+
+    renderDevotionCalendar();
+  });
+
+  document.getElementById("nextMonth").addEventListener("click", () => {
+    calendarMonth++;
+
+    if (calendarMonth > 11) {
+      calendarMonth = 0;
+      calendarYear++;
+    }
+
+    renderDevotionCalendar();
+  });
+
+  container.querySelectorAll("[data-devotion-date]").forEach(button => {
+    button.addEventListener("click", () => {
+      openDevotionEditor(button.dataset.devotionDate);
+    });
+  });
+}
     transaction.oncomplete = () => resolve();
 
     transaction.onerror = () => {
