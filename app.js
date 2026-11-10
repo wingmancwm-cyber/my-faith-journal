@@ -434,6 +434,138 @@ async function renderDevotionCalendar() {
     });
   });
 }
+    // ==============================
+// 每日靈修：編輯及儲存
+// ==============================
+
+async function openDevotionEditor(date) {
+  if (!databaseReady) {
+    alert("本機資料庫尚未準備好，請稍後再試。");
+    return;
+  }
+
+  selectedDevotionDate = date;
+
+  const calendarView = document.getElementById("devotion-calendar-view");
+  const editorView = document.getElementById("devotion-editor-view");
+  const editor = document.getElementById("devotion-editor");
+
+  if (!calendarView || !editorView || !editor) return;
+
+  const record = await getDevotionRecord(date);
+
+  const dateParts = date.split("-").map(Number);
+  const displayDate = new Intl.DateTimeFormat("zh-Hant", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    weekday: "long"
+  }).format(new Date(dateParts[0], dateParts[1] - 1, dateParts[2]));
+
+  editor.innerHTML = `
+    <div class="devotion-editor-card">
+      <button type="button" id="backToCalendar" class="editor-back">
+        ← 返回月曆
+      </button>
+
+      <p class="eyebrow">MY DAILY DEVOTION</p>
+      <h2>${displayDate}</h2>
+      <p class="editor-intro">安靜片刻，記下今天與上帝相遇的點滴。</p>
+
+      <label for="devotionScripture">今日經文</label>
+      <input
+        id="devotionScripture"
+        type="text"
+        placeholder="例如：詩篇 23:1-6"
+        maxlength="300"
+      >
+
+      <label for="devotionNote">靈修筆記</label>
+      <textarea
+        id="devotionNote"
+        rows="10"
+        placeholder="今天閱讀經文後，有甚麼領受、提醒或反思？"
+      ></textarea>
+
+      <p id="devotionSaveStatus" class="devotion-save-status" role="status"></p>
+
+      <button type="button" id="saveDevotion" class="primary-button">
+        儲存靈修紀錄
+      </button>
+
+      <button
+        type="button"
+        id="deleteDevotion"
+        class="delete-button"
+        ${record ? "" : "hidden"}
+      >
+        刪除此日紀錄
+      </button>
+    </div>
+  `;
+
+  document.getElementById("devotionScripture").value =
+    record?.scripture || "";
+
+  document.getElementById("devotionNote").value =
+    record?.note || "";
+
+  calendarView.hidden = true;
+  editorView.hidden = false;
+
+  document.getElementById("backToCalendar").addEventListener("click", () => {
+    showDevotionCalendar();
+  });
+
+  document.getElementById("saveDevotion").addEventListener("click", async () => {
+    const scripture = document.getElementById("devotionScripture").value.trim();
+    const note = document.getElementById("devotionNote").value.trim();
+    const status = document.getElementById("devotionSaveStatus");
+    const saveButton = document.getElementById("saveDevotion");
+
+    if (!scripture && !note) {
+      status.textContent = "請先填寫經文或靈修筆記。";
+      status.classList.add("has-error");
+      return;
+    }
+
+    saveButton.disabled = true;
+    status.textContent = "正在儲存……";
+    status.classList.remove("has-error");
+
+    try {
+      await saveDevotionRecord(selectedDevotionDate, scripture, note);
+
+      status.textContent = "已成功儲存靈修紀錄。";
+
+      await renderDevotionRecords();
+      await showDevotionCalendar();
+
+    } catch (error) {
+      status.textContent = "儲存失敗，請再試一次。";
+      status.classList.add("has-error");
+      saveButton.disabled = false;
+      console.error(error);
+    }
+  });
+
+  document.getElementById("deleteDevotion").addEventListener("click", async () => {
+    if (!record) return;
+
+    const confirmed = confirm("確定要刪除這一天的靈修紀錄嗎？此操作不能復原。");
+
+    if (!confirmed) return;
+
+    try {
+      await deleteDevotionRecord(selectedDevotionDate);
+      await renderDevotionRecords();
+      await showDevotionCalendar();
+    } catch (error) {
+      alert("刪除失敗，請再試一次。");
+      console.error(error);
+    }
+  });
+}
     transaction.oncomplete = () => resolve();
 
     transaction.onerror = () => {
