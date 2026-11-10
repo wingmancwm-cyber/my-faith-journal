@@ -178,6 +178,11 @@ function openBibleDatabase() {
       keyPath: "date"
     });
   }
+        if (!database.objectStoreNames.contains(NOTES_STORE_NAME)) {
+    database.createObjectStore(NOTES_STORE_NAME, {
+      keyPath: "id"
+    });
+  }
 };
 
     request.onsuccess = () => {
