@@ -128,11 +128,16 @@ const bibleBooks = [
 // ==============================
 
 const DB_NAME = "MyFaithJournal";
-const DB_VERSION = 1;
-const STORE_NAME = "bibleProgress";
+const DB_VERSION = 2;
+
+const BIBLE_STORE_NAME = "bibleProgress";
+const DEVOTION_STORE_NAME = "devotionRecords";
 
 let db = null;
 let bibleProgress = {};
+let selectedDevotionDate = null;
+let calendarYear = new Date().getFullYear();
+let calendarMonth = new Date().getMonth();
 let selectedTestament = "OT";
 let selectedBookId = "gen";
 let databaseReady = false;
@@ -147,12 +152,20 @@ function openBibleDatabase() {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
     request.onupgradeneeded = event => {
-      const database = event.target.result;
+  const database = event.target.result;
 
-      if (!database.objectStoreNames.contains(STORE_NAME)) {
-        database.createObjectStore(STORE_NAME, { keyPath: "id" });
-      }
-    };
+  if (!database.objectStoreNames.contains(BIBLE_STORE_NAME)) {
+    database.createObjectStore(BIBLE_STORE_NAME, {
+      keyPath: "id"
+    });
+  }
+
+  if (!database.objectStoreNames.contains(DEVOTION_STORE_NAME)) {
+    database.createObjectStore(DEVOTION_STORE_NAME, {
+      keyPath: "date"
+    });
+  }
+};
 
     request.onsuccess = () => {
       db = request.result;
@@ -167,8 +180,8 @@ function openBibleDatabase() {
 
 function loadBibleProgress() {
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, "readonly");
-    const store = transaction.objectStore(STORE_NAME);
+    const transaction = db.transaction(BIBLE_STORE_NAME, "readonly");
+    const store = transaction.objectStore(BIBLE_STORE_NAME);
     const request = store.get("chapters");
 
     request.onsuccess = () => {
@@ -184,8 +197,8 @@ function loadBibleProgress() {
 
 function saveBibleProgress() {
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, "readwrite");
-    const store = transaction.objectStore(STORE_NAME);
+    const transaction = db.transaction(BIBLE_STORE_NAME, "readwrite");
+    const store = transaction.objectStore(BIBLE_STORE_NAME);
 
     store.put({
       id: "chapters",
