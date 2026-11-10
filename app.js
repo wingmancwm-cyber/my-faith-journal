@@ -789,7 +789,7 @@ async function openSermonEditor(id) {
   const today = getLocalDateKey();
 
   container.innerHTML = `
-    <div class="devotion-editor-card">
+    <div class="devotion-editor-card sermon-editor-card">
       <button class="editor-back" id="backToSermonList">
         ← 返回講道紀錄
       </button>
