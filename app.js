@@ -743,7 +743,9 @@ async function renderSermonRecords() {
   if (!container) return;
 
   const notes = await getAllNotes();
-  const sermonRecords = notes.filter(note => note.category === "sermon");
+  const sermonRecords = notes.filter(
+    note => note.category === "sermon"
+  );
 
   container.innerHTML = `
     <div class="devotion-list-heading">
@@ -751,7 +753,9 @@ async function renderSermonRecords() {
         <h3>講道紀錄</h3>
         <p>整理每一次聽道的領受與反思</p>
       </div>
-      <button class="primary-button" id="addSermonButton">＋ 新增講道</button>
+      <button class="primary-button" id="addSermonButton">
+        ＋ 新增講道
+      </button>
     </div>
 
     ${
@@ -764,8 +768,10 @@ async function renderSermonRecords() {
           </div>
         `
         : sermonRecords.map(note => `
-          <button class="devotion-record-item sermon-record-item"
-                  data-sermon-id="${escapeDevotionText(note.id)}">
+          <button
+            class="devotion-record-item sermon-record-item"
+            data-sermon-id="${escapeDevotionText(note.id)}"
+          >
             <div class="devotion-record-date">
               ${escapeDevotionText(note.date || "")}
             </div>
@@ -778,15 +784,22 @@ async function renderSermonRecords() {
             </p>
           </button>
         `).join("")
-    
-      document.getElementById("addSermonButton")
-    ?.addEventListener("click", () => openSermonEditor(null));
-    container.querySelectorAll("[data-sermon-id]").forEach(button => {
+    }
+  `;
+
+  // 新增講道按鈕
+  document.getElementById("addSermonButton")
+    ?.addEventListener("click", () => {
+      openSermonEditor(null);
+    });
+
+  // 開啟已有講道紀錄
+  container.querySelectorAll("[data-sermon-id]").forEach(button => {
     button.addEventListener("click", () => {
       openSermonEditor(button.dataset.sermonId);
     });
   });
-  }
+}
     // 開啟講道紀錄編輯畫面
 async function openSermonEditor(id) {
   const container = document.getElementById("devotion-record-list");
