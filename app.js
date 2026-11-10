@@ -216,6 +216,18 @@ function saveBibleProgress() {
       id: "chapters",
       value: bibleProgress
     });
+
+    transaction.oncomplete = () => resolve();
+
+    transaction.onerror = () => {
+      reject(transaction.error || new Error("儲存讀經紀錄失敗。"));
+    };
+
+    transaction.onabort = () => {
+      reject(transaction.error || new Error("儲存讀經紀錄中斷。"));
+    };
+  });
+}
         
 // ==============================
 // 每日靈修：資料庫操作
@@ -655,17 +667,7 @@ function escapeDevotionText(value) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
-    transaction.oncomplete = () => resolve();
-
-    transaction.onerror = () => {
-      reject(transaction.error || new Error("儲存讀經紀錄失敗。"));
-    };
-
-    transaction.onabort = () => {
-      reject(transaction.error || new Error("儲存讀經紀錄中斷。"));
-    };
-  });
-}
+    
 
 
 // ==============================
