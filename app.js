@@ -708,7 +708,8 @@ async function openDevotionEditor(date) {
     }
   });
 }
-    // ==============================
+ 
+// ==============================
 // 紀錄頁面：每日靈修列表
 // ==============================
 
@@ -731,209 +732,13 @@ async function renderDevotionRecords() {
         </div>
       `;
 
-      document.getElementById("startFirstDevotion").addEventListener("click", () => {
-        showPage("devotion");
-      });
+      document.getElementById("startFirstDevotion")
+        .addEventListener("click", () => {
+          showPage("devotion");
+        });
 
       return;
     }
-    // 顯示講道紀錄列表
-async function renderSermonRecords() {
-  const container = document.getElementById("devotion-record-list");
-  if (!container) return;
-
-  const notes = await getAllNotes();
-  const sermonRecords = notes.filter(
-    note => note.category === "sermon"
-  );
-
-  container.innerHTML = `
-    <div class="devotion-list-heading">
-      <div>
-        <h3>講道紀錄</h3>
-        <p>整理每一次聽道的領受與反思</p>
-      </div>
-      <button class="primary-button" id="addSermonButton">
-        ＋ 新增講道
-      </button>
-    </div>
-
-    ${
-      sermonRecords.length === 0
-        ? `
-          <div class="empty-state">
-            <div class="empty-state-icon">✎</div>
-            <h3>尚未有講道紀錄</h3>
-            <p>把每一次聽道的重點和領受記錄下來。</p>
-          </div>
-        `
-        : sermonRecords.map(note => `
-          <button
-            class="devotion-record-item sermon-record-item"
-            data-sermon-id="${escapeDevotionText(note.id)}"
-          >
-            <div class="devotion-record-date">
-              ${escapeDevotionText(note.date || "")}
-            </div>
-            <h3>${escapeDevotionText(note.title || "未命名講道")}</h3>
-            <p class="devotion-record-preview">
-              講員：${escapeDevotionText(note.speaker || "未填寫")}
-            </p>
-            <p class="devotion-record-preview">
-              ${escapeDevotionText(note.content || "")}
-            </p>
-          </button>
-        `).join("")
-    }
-  `;
-
-  // 新增講道按鈕
-  document.getElementById("addSermonButton")
-    ?.addEventListener("click", () => {
-      openSermonEditor(null);
-    });
-
-  // 開啟已有講道紀錄
-  container.querySelectorAll("[data-sermon-id]").forEach(button => {
-    button.addEventListener("click", () => {
-      openSermonEditor(button.dataset.sermonId);
-    });
-  });
-}
-    // 開啟講道紀錄編輯畫面
-async function openSermonEditor(id) {
-  const container = document.getElementById("devotion-record-list");
-  if (!container) return;
-
-  const note = id ? await getNote(id) : null;
-
-  const today = getLocalDateKey();
-
-  container.innerHTML = `
-    <div class="devotion-editor-card sermon-editor-card">
-      <button class="editor-back" id="backToSermonList">
-        ← 返回講道紀錄
-      </button>
-
-      <h3>${note ? "編輯講道紀錄" : "新增講道紀錄"}</h3>
-
-      <label for="sermonTitle">講道標題</label>
-      <input
-        id="sermonTitle"
-        type="text"
-        placeholder="輸入講道標題"
-        value="${escapeDevotionText(note?.title || "")}"
-      >
-
-      <label for="sermonDate">日期</label>
-      <input
-        id="sermonDate"
-        type="date"
-        value="${escapeDevotionText(note?.date || today)}"
-      >
-
-      <label for="sermonSpeaker">講員</label>
-      <input
-        id="sermonSpeaker"
-        type="text"
-        placeholder="輸入講員姓名"
-        value="${escapeDevotionText(note?.speaker || "")}"
-      >
-
-      <label for="sermonContent">筆記內容</label>
-      <textarea
-        id="sermonContent"
-        rows="8"
-        placeholder="記下講道重點、經文及個人領受..."
-      >${escapeDevotionText(note?.content || "")}</textarea>
-
-      <button class="primary-button" id="saveSermonButton">
-        儲存講道紀錄
-      </button>
-
-      ${
-        note
-          ? `<button class="delete-button" id="deleteSermonButton">刪除這筆紀錄</button>`
-          : ""
-      }
-// 儲存講道紀錄
-async function saveSermonRecord() {
-  const title = document.getElementById("sermonTitle").value.trim();
-  const date = document.getElementById("sermonDate").value;
-  const speaker = document.getElementById("sermonSpeaker").value.trim();
-  const content = document.getElementById("sermonContent").value.trim();
-  const status = document.getElementById("sermonSaveStatus");
-
-  if (!title || !date || !content) {
-    status.textContent = "請填寫講道標題、日期及筆記內容。";
-    return;
-  }
-
-  const editingId = document
-    .getElementById("saveSermonButton")
-    .dataset.editingId;
-
-  const note = {
-    id: editingId || (
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : Date.now().toString()
-    ),
-    category: "sermon",
-    title,
-    date,
-    speaker,
-    content
-  };
-
-  try {
-    await saveNote(note);
-    renderSermonRecords();
-  } catch (error) {
-    status.textContent = "儲存失敗，請稍後再試。";
-    console.error("儲存講道紀錄失敗：", error);
-  }
-}
-
-// 刪除講道紀錄
-async function deleteSermonRecord(id) {
-  if (!confirm("確定要刪除這筆講道紀錄嗎？")) return;
-
-  try {
-    await deleteNote(id);
-    renderSermonRecords();
-  } catch (error) {
-    alert("刪除失敗，請稍後再試。");
-    console.error("刪除講道紀錄失敗：", error);
-  }
-}
-      <p id="sermonSaveStatus" class="devotion-save-status"></p>
-    </div>
-  `;
-
-  document.getElementById("backToSermonList")
-    ?.addEventListener("click", renderSermonRecords);
-
-if (id) {
-  document.getElementById("saveSermonButton").dataset.editingId = id;
-}
-  document.getElementById("saveSermonButton")
-    ?.addEventListener("click", saveSermonRecord);
-
-  document.getElementById("deleteSermonButton")
-    ?.addEventListener("click", () => deleteSermonRecord(id));
-}
-  `;
-
-  document.getElementById("addSermonButton")
-    ?.addEventListener("click", () => openSermonEditor(null));
-
-  container.querySelectorAll("[data-sermon-id]").forEach(button => {
-    button.addEventListener("click", () => {
-      openSermonEditor(button.dataset.sermonId);
-    });
-  });
-}
 
     container.innerHTML = `
       <div class="devotion-list-heading">
@@ -985,6 +790,222 @@ if (id) {
   }
 }
 
+
+// ==============================
+// 紀錄頁面：講道紀錄列表
+// ==============================
+
+async function renderSermonRecords() {
+  const container = document.getElementById("devotion-record-list");
+  if (!container || !databaseReady) return;
+
+  try {
+    const notes = await getAllNotes();
+    const sermonRecords = notes.filter(
+      note => note.category === "sermon"
+    );
+
+    container.innerHTML = `
+      <div class="devotion-list-heading">
+        <div>
+          <h3>講道紀錄</h3>
+          <p>整理每一次聽道的領受與反思</p>
+        </div>
+        <button type="button" class="primary-button" id="addSermonButton">
+          ＋ 新增講道
+        </button>
+      </div>
+
+      ${
+        sermonRecords.length === 0
+          ? `
+            <div class="empty-state">
+              <div class="empty-state-icon">✎</div>
+              <h3>尚未有講道紀錄</h3>
+              <p>把每一次聽道的重點和領受記錄下來。</p>
+            </div>
+          `
+          : sermonRecords.map(note => `
+            <button
+              type="button"
+              class="devotion-record-item sermon-record-item"
+              data-sermon-id="${escapeDevotionText(note.id)}"
+            >
+              <div class="devotion-record-date">
+                ${escapeDevotionText(note.date || "")}
+              </div>
+              <h3>${escapeDevotionText(note.title || "未命名講道")}</h3>
+              <p class="devotion-record-preview">
+                講員：${escapeDevotionText(note.speaker || "未填寫")}
+              </p>
+              <p class="devotion-record-preview">
+                ${escapeDevotionText(note.content || "")}
+              </p>
+            </button>
+          `).join("")
+      }
+    `;
+
+    document.getElementById("addSermonButton")
+      .addEventListener("click", () => {
+        openSermonEditor(null);
+      });
+
+    container.querySelectorAll("[data-sermon-id]").forEach(button => {
+      button.addEventListener("click", () => {
+        openSermonEditor(button.dataset.sermonId);
+      });
+    });
+
+  } catch (error) {
+    container.textContent = "暫時無法載入講道紀錄。";
+    console.error(error);
+  }
+}
+
+
+// ==============================
+// 講道紀錄：新增及編輯
+// ==============================
+
+async function openSermonEditor(id) {
+  const container = document.getElementById("devotion-record-list");
+  if (!container) return;
+
+  const note = id ? await getNote(id) : null;
+  const today = getLocalDateKey();
+
+  container.innerHTML = `
+    <div class="devotion-editor-card sermon-editor-card">
+
+      <button type="button" class="editor-back" id="backToSermonList">
+        ← 返回講道紀錄
+      </button>
+
+      <h3>${note ? "編輯講道紀錄" : "新增講道紀錄"}</h3>
+
+      <label for="sermonTitle">講道標題</label>
+      <input
+        id="sermonTitle"
+        type="text"
+        placeholder="輸入講道標題"
+        value="${escapeDevotionText(note?.title || "")}"
+      >
+
+      <label for="sermonDate">日期</label>
+      <input
+        id="sermonDate"
+        type="date"
+        value="${escapeDevotionText(note?.date || today)}"
+      >
+
+      <label for="sermonSpeaker">講員</label>
+      <input
+        id="sermonSpeaker"
+        type="text"
+        placeholder="輸入講員姓名"
+        value="${escapeDevotionText(note?.speaker || "")}"
+      >
+
+      <label for="sermonContent">筆記內容</label>
+      <textarea
+        id="sermonContent"
+        rows="8"
+        placeholder="記下講道重點、經文及個人領受..."
+      >${escapeDevotionText(note?.content || "")}</textarea>
+
+      <button type="button" class="primary-button" id="saveSermonButton">
+        儲存講道紀錄
+      </button>
+
+      ${
+        note
+          ? `<button type="button" class="delete-button" id="deleteSermonButton">刪除這筆紀錄</button>`
+          : ""
+      }
+
+      <p id="sermonSaveStatus" class="devotion-save-status"></p>
+    </div>
+  `;
+
+  document.getElementById("backToSermonList")
+    .addEventListener("click", renderSermonRecords);
+
+  const saveButton = document.getElementById("saveSermonButton");
+
+  if (id) {
+    saveButton.dataset.editingId = id;
+  }
+
+  saveButton.addEventListener("click", saveSermonRecord);
+
+  if (note) {
+    document.getElementById("deleteSermonButton")
+      .addEventListener("click", () => {
+        deleteSermonRecord(id);
+      });
+  }
+}
+
+
+// ==============================
+// 講道紀錄：儲存
+// ==============================
+
+async function saveSermonRecord() {
+  const title = document.getElementById("sermonTitle").value.trim();
+  const date = document.getElementById("sermonDate").value;
+  const speaker = document.getElementById("sermonSpeaker").value.trim();
+  const content = document.getElementById("sermonContent").value.trim();
+  const status = document.getElementById("sermonSaveStatus");
+  const saveButton = document.getElementById("saveSermonButton");
+
+  if (!title || !date || !content) {
+    status.textContent = "請填寫講道標題、日期及筆記內容。";
+    return;
+  }
+
+  const note = {
+    id: saveButton.dataset.editingId ||
+      (crypto.randomUUID
+        ? crypto.randomUUID()
+        : Date.now().toString()),
+    category: "sermon",
+    title,
+    date,
+    speaker,
+    content
+  };
+
+  saveButton.disabled = true;
+  status.textContent = "正在儲存……";
+
+  try {
+    await saveNote(note);
+    await renderSermonRecords();
+  } catch (error) {
+    status.textContent = "儲存失敗，請稍後再試。";
+    saveButton.disabled = false;
+    console.error(error);
+  }
+}
+
+
+// ==============================
+// 講道紀錄：刪除
+// ==============================
+
+async function deleteSermonRecord(id) {
+  if (!confirm("確定要刪除這筆講道紀錄嗎？")) return;
+
+  try {
+    await deleteNote(id);
+    await renderSermonRecords();
+  } catch (error) {
+    alert("刪除失敗，請稍後再試。");
+    console.error(error);
+  }
+}
 function escapeDevotionText(value) {
   return String(value)
     .replace(/&/g, "&amp;")
