@@ -348,9 +348,34 @@ async function showDevotionCalendar() {
 
 async function renderDevotionCalendar() {
   const container = document.getElementById("devotion-calendar");
-  if (!container || !databaseReady) return;
 
-  const records = await getAllDevotionRecords();
+  if (!container) return;
+
+  if (!databaseReady) {
+    container.innerHTML = `
+      <p class="calendar-hint">
+        本機資料庫尚未準備好，請重新載入 App。
+      </p>
+    `;
+    return;
+  }
+
+  let records = [];
+
+  try {
+    records = await getAllDevotionRecords();
+  } catch (error) {
+    console.error("每日靈修月曆讀取失敗：", error);
+
+    container.innerHTML = `
+      <div class="devotion-calendar-card">
+        <h2>月曆暫時無法載入</h2>
+        <p>錯誤類型：${escapeDevotionText(error.name || "未知錯誤")}</p>
+        <p>${escapeDevotionText(error.message || "沒有錯誤描述")}</p>
+      </div>
+    `;
+    return;
+  }
   const recordedDates = new Set(records.map(record => record.date));
 
   const firstDay = new Date(calendarYear, calendarMonth, 1).getDay();
