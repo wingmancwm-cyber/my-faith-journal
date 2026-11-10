@@ -821,7 +821,12 @@ function renderRecordsCategory(category) {
     renderDevotionRecords();
     return;
   }
-
+  // 講道：顯示講道紀錄
+  if (category === "sermon") {
+    renderSermonRecords();
+    return;
+  }
+  
   // 讀經：連接現有讀經功能
   if (category === "bible") {
     container.innerHTML = `
