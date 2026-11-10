@@ -2,7 +2,7 @@
 // 恩典手帳：基本導覽
 // ==============================
 
-const pageNames = ["home", "records", "bible", "library", "settings"];
+const pageNames = ["home", "devotion", "records", "bible", "library", "settings"];
 
 function showPage(name) {
   if (!pageNames.includes(name)) return;
@@ -12,12 +12,24 @@ function showPage(name) {
   });
 
   document.querySelectorAll(".nav-item").forEach(button => {
-    button.classList.toggle("active", button.dataset.page === name);
+    const activePage = name === "devotion" ? "home" : name;
+
+    button.classList.toggle(
+      "active",
+      button.dataset.page === activePage
+    );
   });
+
+  if (name === "devotion") {
+    showDevotionCalendar();
+  }
+
+  if (name === "records" && databaseReady) {
+    renderDevotionRecords();
+  }
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
-
 document.querySelectorAll(".nav-item").forEach(button => {
   button.addEventListener("click", () => showPage(button.dataset.page));
 });
