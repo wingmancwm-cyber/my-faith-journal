@@ -336,6 +336,103 @@ function deleteDevotionRecord(date) {
     };
   });
 }
+
+// ==============================
+// 筆記資料：讀取、儲存及刪除
+// ==============================
+
+// 讀取所有筆記
+function getAllNotes() {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(
+      NOTES_STORE_NAME,
+      "readonly"
+    );
+
+    const store = transaction.objectStore(NOTES_STORE_NAME);
+    const request = store.getAll();
+
+    request.onsuccess = () => {
+      const notes = request.result || [];
+
+      notes.sort((a, b) => {
+        return (b.date || "").localeCompare(a.date || "");
+      });
+
+      resolve(notes);
+    };
+
+    request.onerror = () => {
+      reject(request.error || new Error("讀取筆記失敗。"));
+    };
+  });
+}
+
+// 讀取單篇筆記
+function getNote(id) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(
+      NOTES_STORE_NAME,
+      "readonly"
+    );
+
+    const store = transaction.objectStore(NOTES_STORE_NAME);
+    const request = store.get(id);
+
+    request.onsuccess = () => {
+      resolve(request.result || null);
+    };
+
+    request.onerror = () => {
+      reject(request.error || new Error("讀取筆記失敗。"));
+    };
+  });
+}
+
+// 新增或修改筆記
+function saveNote(note) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(
+      NOTES_STORE_NAME,
+      "readwrite"
+    );
+
+    const store = transaction.objectStore(NOTES_STORE_NAME);
+
+    store.put(note);
+
+    transaction.oncomplete = () => resolve();
+
+    transaction.onerror = () => {
+      reject(transaction.error || new Error("儲存筆記失敗。"));
+    };
+
+    transaction.onabort = () => {
+      reject(transaction.error || new Error("儲存筆記中斷。"));
+    };
+  });
+}
+
+// 刪除筆記
+function deleteNote(id) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(
+      NOTES_STORE_NAME,
+      "readwrite"
+    );
+
+    const store = transaction.objectStore(NOTES_STORE_NAME);
+
+    store.delete(id);
+
+    transaction.oncomplete = () => resolve();
+
+    transaction.onerror = () => {
+      reject(transaction.error || new Error("刪除筆記失敗。"));
+    };
+  });
+}
+
     // ==============================
 // 每日靈修：月曆介面
 // ==============================
