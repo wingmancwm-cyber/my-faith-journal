@@ -154,6 +154,7 @@ let calendarMonth = new Date().getMonth();
 let selectedTestament = "OT";
 let selectedBookId = "gen";
 let databaseReady = false;
+let selectedRecordCategory = "devotion";
 
 function openBibleDatabase() {
   return new Promise((resolve, reject) => {
