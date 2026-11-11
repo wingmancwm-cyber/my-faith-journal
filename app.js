@@ -1214,6 +1214,76 @@ async function deleteReadingRecord(id) {
 }
 
 // ==============================
+// 讀經筆記：列表
+// ==============================
+
+async function renderBibleNotes() {
+  const container = document.getElementById("devotion-record-list");
+  if (!container || !databaseReady) return;
+
+  try {
+    const notes = await getAllNotes();
+    const bibleRecords = notes.filter(
+      note => note.category === "bible"
+    );
+
+    container.innerHTML = `
+      <div class="devotion-list-heading">
+        <div>
+          <h3>讀經筆記</h3>
+          <p>記錄閱讀經文時的觀察、理解與反思</p>
+        </div>
+        <button type="button" class="primary-button" id="addBibleNoteButton">
+          ＋ 新增讀經筆記
+        </button>
+      </div>
+
+      ${
+        bibleRecords.length === 0
+          ? `
+            <div class="empty-state">
+              <div class="empty-state-icon">📖</div>
+              <h3>尚未有讀經筆記</h3>
+              <p>記下每次閱讀聖經時的領受與反思。</p>
+            </div>
+          `
+          : bibleRecords.map(note => `
+            <button
+              type="button"
+              class="devotion-record-item"
+              data-bible-note-id="${escapeDevotionText(note.id)}"
+            >
+              <h3>${escapeDevotionText(note.scripture || "未填寫經文範圍")}</h3>
+              <p class="devotion-record-preview">
+                ${escapeDevotionText(note.date || "沒有設定日期")}
+              </p>
+              <p class="devotion-record-preview">
+                ${escapeDevotionText(note.content || "")}
+              </p>
+            </button>
+          `).join("")
+      }
+    `;
+
+    document.getElementById("addBibleNoteButton")
+      .addEventListener("click", () => {
+        openBibleNoteEditor(null);
+      });
+
+    container.querySelectorAll("[data-bible-note-id]")
+      .forEach(button => {
+        button.addEventListener("click", () => {
+          openBibleNoteEditor(button.dataset.bibleNoteId);
+        });
+      });
+
+  } catch (error) {
+    container.textContent = "暫時無法載入讀經筆記。";
+    console.error(error);
+  }
+}
+
+// ==============================
 // 其他：自由筆記列表
 // ==============================
 
@@ -1613,24 +1683,11 @@ function renderRecordsCategory(category) {
   }
 
   // 讀經：連接現有讀經功能
-  if (category === "bible") {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-illustration">📖</div>
-        <h2>聖經閱讀進度</h2>
-        <p>你的 66 卷聖經閱讀進度已獨立儲存。</p>
-        <button type="button" class="text-arrow" id="openBiblePage">
-          前往讀經頁面 <span>→</span>
-        </button>
-      </div>
-    `;
-
-    document.getElementById("openBiblePage").addEventListener("click", () => {
-      showPage("bible");
-    });
-
-    return;
-  }
+  // 讀經：顯示讀經筆記
+if (category === "bible") {
+  renderBibleNotes();
+  return;
+}
 
   // 其他：暫時保留提示頁面
   // 其他：顯示自由筆記
