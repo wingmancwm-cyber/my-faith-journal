@@ -1283,6 +1283,82 @@ async function renderBibleNotes() {
   }
 }
 
+ // ==============================
+// 讀經筆記：新增及編輯
+// ==============================
+
+async function openBibleNoteEditor(id) {
+  const container = document.getElementById("devotion-record-list");
+  if (!container) return;
+
+  const note = id ? await getNote(id) : null;
+
+  container.innerHTML = `
+    <div class="devotion-editor-card">
+
+      <button type="button" class="editor-back" id="backToBibleNotes">
+        ← 返回讀經筆記
+      </button>
+
+      <h3>${note ? "編輯讀經筆記" : "新增讀經筆記"}</h3>
+
+      <label for="bibleNoteDate">日期</label>
+      <input
+        id="bibleNoteDate"
+        type="date"
+        value="${escapeDevotionText(
+          note?.date || new Date().toISOString().slice(0, 10)
+        )}"
+      >
+
+      <label for="bibleNoteScripture">經文範圍</label>
+      <input
+        id="bibleNoteScripture"
+        type="text"
+        placeholder="例如：創世記 1:1–31"
+        value="${escapeDevotionText(note?.scripture || "")}"
+      >
+
+      <label for="bibleNoteContent">讀經筆記</label>
+      <textarea
+        id="bibleNoteContent"
+        rows="10"
+        placeholder="記下經文觀察、理解、疑問及個人反思..."
+      >${escapeDevotionText(note?.content || "")}</textarea>
+
+      <button type="button" class="primary-button" id="saveBibleNoteButton">
+        儲存讀經筆記
+      </button>
+
+      ${
+        note
+          ? `<button type="button" class="delete-button" id="deleteBibleNoteButton">刪除這篇筆記</button>`
+          : ""
+      }
+
+      <p id="bibleNoteSaveStatus" class="devotion-save-status"></p>
+    </div>
+  `;
+
+  document.getElementById("backToBibleNotes")
+    .addEventListener("click", renderBibleNotes);
+
+  const saveButton = document.getElementById("saveBibleNoteButton");
+
+  if (id) {
+    saveButton.dataset.editingId = id;
+  }
+
+  saveButton.addEventListener("click", saveBibleNote);
+
+  if (note) {
+    document.getElementById("deleteBibleNoteButton")
+      .addEventListener("click", () => {
+        deleteBibleNote(id);
+      });
+  }
+}
+
 // ==============================
 // 其他：自由筆記列表
 // ==============================
