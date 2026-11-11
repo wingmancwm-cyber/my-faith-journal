@@ -1213,6 +1213,286 @@ async function deleteReadingRecord(id) {
   }
 }
 
+// ==============================
+// 其他：自由筆記列表
+// ==============================
+
+async function renderOtherRecords() {
+  const container = document.getElementById("devotion-record-list");
+  if (!container || !databaseReady) return;
+
+  try {
+    // 清理上一次列表產生的圖片網址
+    if (renderOtherRecords.imageUrls) {
+      renderOtherRecords.imageUrls.forEach(url => {
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    renderOtherRecords.imageUrls = [];
+
+    const notes = await getAllNotes();
+    const otherRecords = notes.filter(
+      note => note.category === "other"
+    );
+
+    container.innerHTML = `
+      <div class="devotion-list-heading">
+        <div>
+          <h3>其他筆記</h3>
+          <p>記錄信仰生活中的想法與點滴</p>
+        </div>
+        <button type="button" class="primary-button" id="addOtherButton">
+          ＋ 新增自由筆記
+        </button>
+      </div>
+
+      ${
+        otherRecords.length === 0
+          ? `
+            <div class="empty-state">
+              <div class="empty-state-icon">✧</div>
+              <h3>尚未有其他筆記</h3>
+              <p>在這裡自由記下生活中的想法與反思。</p>
+            </div>
+          `
+          : otherRecords.map(note => {
+              let imageHTML = "";
+
+              if (note.image instanceof Blob) {
+                const imageURL = URL.createObjectURL(note.image);
+                renderOtherRecords.imageUrls.push(imageURL);
+
+                imageHTML = `
+                  <img
+                    src="${imageURL}"
+                    alt="筆記圖片"
+                    class="other-record-image"
+                  >
+                `;
+              }
+
+              return `
+                <button
+                  type="button"
+                  class="devotion-record-item"
+                  data-other-id="${escapeDevotionText(note.id)}"
+                >
+                  <h3>${escapeDevotionText(note.title || "未命名筆記")}</h3>
+                  <p class="devotion-record-preview">
+                    ${escapeDevotionText(note.date || "沒有設定日期")}
+                  </p>
+                  <p class="devotion-record-preview">
+                    ${escapeDevotionText(note.content || "")}
+                  </p>
+                  ${imageHTML}
+                </button>
+              `;
+            }).join("")
+      }
+    `;
+
+    document.getElementById("addOtherButton")
+      .addEventListener("click", () => {
+        openOtherEditor(null);
+      });
+
+    container.querySelectorAll("[data-other-id]").forEach(button => {
+      button.addEventListener("click", () => {
+        openOtherEditor(button.dataset.otherId);
+      });
+    });
+
+  } catch (error) {
+    container.textContent = "暫時無法載入其他筆記。";
+    console.error(error);
+  }
+}
+
+renderOtherRecords.imageUrls = [];
+
+async function openOtherEditor(id) {
+  const container = document.getElementById("devotion-record-list");
+  if (!container) return;
+
+  const note = id ? await getNote(id) : null;
+
+  let imageURL = null;
+
+  if (note && note.image instanceof Blob) {
+    imageURL = URL.createObjectURL(note.image);
+  }
+
+  container.innerHTML = `
+    <div class="devotion-editor-card other-editor-card">
+
+      <button type="button" class="editor-back" id="backToOtherList">
+        ← 返回其他筆記
+      </button>
+
+      <h3>${note ? "編輯自由筆記" : "新增自由筆記"}</h3>
+
+      <label for="otherTitle">標題</label>
+      <input
+        id="otherTitle"
+        type="text"
+        placeholder="為這篇筆記命名"
+        value="${escapeDevotionText(note?.title || "")}"
+      >
+
+      <label for="otherDate">日期（可選）</label>
+      <input
+        id="otherDate"
+        type="date"
+        value="${escapeDevotionText(note?.date || "")}"
+      >
+
+      <label for="otherContent">筆記內容</label>
+      <textarea
+        id="otherContent"
+        rows="8"
+        placeholder="在這裡自由記下你的想法、反思或生活點滴..."
+      >${escapeDevotionText(note?.content || "")}</textarea>
+
+      <div class="other-image-section">
+        <label for="otherImage">圖片（最多一張，5 MB 以下）</label>
+
+        <input
+          id="otherImage"
+          type="file"
+          accept="image/*"
+          capture="environment"
+        >
+
+        <p class="devotion-save-status">
+          可以從相簿選取圖片，或使用相機拍攝。
+        </p>
+
+        <div id="otherImagePreview">
+          ${
+            imageURL
+              ? `<img src="${imageURL}" alt="筆記圖片預覽" class="other-editor-image">`
+              : `<p>尚未加入圖片</p>`
+          }
+        </div>
+
+        <button
+          type="button"
+          class="text-arrow"
+          id="removeOtherImage"
+          ${imageURL ? "" : "hidden"}
+        >
+          移除圖片
+        </button>
+
+        <p id="otherImageStatus" class="devotion-save-status"></p>
+      </div>
+
+      <button type="button" class="primary-button" id="saveOtherButton">
+        儲存自由筆記
+      </button>
+
+      ${
+        note
+          ? `<button type="button" class="delete-button" id="deleteOtherButton">刪除這篇筆記</button>`
+          : ""
+      }
+
+      <p id="otherSaveStatus" class="devotion-save-status"></p>
+    </div>
+  `;
+
+  const imageInput = document.getElementById("otherImage");
+  const imagePreview = document.getElementById("otherImagePreview");
+  const imageStatus = document.getElementById("otherImageStatus");
+  const removeImageButton = document.getElementById("removeOtherImage");
+
+  const editorState = {
+    image: note?.image instanceof Blob ? note.image : null,
+    removeImage: false,
+    previewURL: imageURL
+  };
+
+  imageInput.addEventListener("change", () => {
+    imageStatus.textContent = "";
+
+    const file = imageInput.files[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      imageInput.value = "";
+      imageStatus.textContent = "請選取有效的圖片檔案。";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      imageInput.value = "";
+      imageStatus.textContent = "圖片超過 5 MB，請重新選取較小的圖片。";
+      return;
+    }
+
+    if (editorState.previewURL) {
+      URL.revokeObjectURL(editorState.previewURL);
+    }
+
+    editorState.image = file;
+    editorState.removeImage = false;
+    editorState.previewURL = URL.createObjectURL(file);
+
+    imagePreview.innerHTML = `
+      <img
+        src="${editorState.previewURL}"
+        alt="筆記圖片預覽"
+        class="other-editor-image"
+      >
+    `;
+
+    removeImageButton.hidden = false;
+    imageStatus.textContent = "圖片已選取，儲存筆記後便會保存。";
+  });
+
+  removeImageButton.addEventListener("click", () => {
+    editorState.image = null;
+    editorState.removeImage = true;
+    imageInput.value = "";
+
+    if (editorState.previewURL) {
+      URL.revokeObjectURL(editorState.previewURL);
+      editorState.previewURL = null;
+    }
+
+    imagePreview.innerHTML = "<p>尚未加入圖片</p>";
+    removeImageButton.hidden = true;
+    imageStatus.textContent = "圖片已移除，儲存筆記後便會更新。";
+  });
+
+  document.getElementById("backToOtherList")
+    .addEventListener("click", () => {
+      if (editorState.previewURL) {
+        URL.revokeObjectURL(editorState.previewURL);
+      }
+      renderOtherRecords();
+    });
+
+  const saveButton = document.getElementById("saveOtherButton");
+
+  if (id) {
+    saveButton.dataset.editingId = id;
+  }
+
+  saveButton.editorState = editorState;
+
+  saveButton.addEventListener("click", saveOtherRecord);
+
+  if (note) {
+    document.getElementById("deleteOtherButton")
+      .addEventListener("click", () => {
+        deleteOtherRecord(id);
+      });
+  }
+}
+
 function escapeDevotionText(value) {
   return String(value)
     .replace(/&/g, "&amp;")
