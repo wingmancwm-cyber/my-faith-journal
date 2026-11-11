@@ -1493,6 +1493,59 @@ async function openOtherEditor(id) {
   }
 }
 
+// ==============================
+// 其他：儲存自由筆記
+// ==============================
+
+async function saveOtherRecord() {
+  const title = document.getElementById("otherTitle").value.trim();
+  const date = document.getElementById("otherDate").value;
+  const content = document.getElementById("otherContent").value.trim();
+
+  const status = document.getElementById("otherSaveStatus");
+  const saveButton = document.getElementById("saveOtherButton");
+  const editorState = saveButton.editorState;
+
+  if (!title) {
+    status.textContent = "請填寫筆記標題。";
+    return;
+  }
+
+  const newId =
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : Date.now().toString();
+
+  const note = {
+    id: saveButton.dataset.editingId || newId,
+    category: "other",
+    title,
+    date,
+    content,
+    image: editorState.image || null
+  };
+
+  saveButton.disabled = true;
+  status.textContent = "正在儲存……";
+
+  try {
+    await saveNote(note);
+
+    if (editorState.previewURL) {
+      URL.revokeObjectURL(editorState.previewURL);
+      editorState.previewURL = null;
+    }
+
+    await renderOtherRecords();
+
+  } catch (error) {
+    status.textContent = "儲存失敗，請稍後再試。";
+    saveButton.disabled = false;
+    console.error(error);
+  }
+}
+
 function escapeDevotionText(value) {
   return String(value)
     .replace(/&/g, "&amp;")
