@@ -130,7 +130,39 @@
         <div class="settings-card">
           <div class="settings-row"><div><b>資料儲存方式</b><small>只儲存在目前 iPhone 的瀏覽器</small></div><span class="status-pill">本機</span></div>
           <div class="settings-row"><div><b>雲端同步</b><small>不使用雲端帳戶或同步服務</small></div><span class="status-pill">關閉</span></div>
-          <div class="settings-row"><div><b>備份與還原</b><small>稍後加入完整 ZIP 備份功能</small></div><span>→</span></div>
+          
+<div class="settings-row">
+  <div>
+    <b>資料備份與還原</b>
+    <small>將所有紀錄及圖片保存為 ZIP 檔案</small>
+  </div>
+</div>
+
+<div class="backup-section">
+  <button
+    type="button"
+    class="primary-button"
+    id="exportBackupButton"
+  >
+    ↓ 匯出完整備份 ZIP
+  </button>
+
+  <label for="importBackupFile" class="backup-import-label">
+    ↑ 選擇 ZIP 備份檔案
+  </label>
+
+  <input
+    type="file"
+    id="importBackupFile"
+    accept=".zip,application/zip"
+    hidden
+  >
+
+  <p id="backupStatus" class="devotion-save-status">
+    建議定期備份，並將 ZIP 檔案保存到安全的位置。
+  </p>
+</div>
+
           <div class="settings-row"><div><b>關於恩典手帳</b><small>第一階段介面版本</small></div><span>1.0</span></div>
         </div>
         <p class="privacy-note">提醒：目前這個版本尚未儲存個人紀錄。日後正式加入資料功能後，請定期自行匯出備份；清除 Safari 網站資料可能會刪除本機紀錄。</p>
