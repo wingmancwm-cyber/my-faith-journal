@@ -756,3 +756,49 @@
   width: 100%;
   margin-top: 16px;
 }
+
+/* ==============================
+   其他：自由筆記圖片樣式
+============================== */
+
+/* 自由筆記列表中的圖片 */
+.other-record-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 500px;
+  object-fit: contain;
+  margin-top: 12px;
+  border-radius: 12px;
+}
+
+/* 自由筆記編輯器中的圖片預覽 */
+.other-editor-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 600px;
+  object-fit: contain;
+  margin-top: 12px;
+  border-radius: 12px;
+}
+
+/* 圖片選取區域 */
+.other-image-section {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* 圖片預覽區域 */
+#otherImagePreview {
+  width: 100%;
+  margin-top: 12px;
+  overflow: hidden;
+}
+
+/* 圖片選取按鈕 */
+#otherImage {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+}
