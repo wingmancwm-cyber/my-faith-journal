@@ -1546,6 +1546,26 @@ async function saveOtherRecord() {
   }
 }
 
+// ==============================
+// 其他：刪除自由筆記
+// ==============================
+
+async function deleteOtherRecord(id) {
+  const confirmed = confirm(
+    "確定要刪除這篇自由筆記嗎？圖片亦會一併刪除。"
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await deleteNote(id);
+    await renderOtherRecords();
+  } catch (error) {
+    alert("刪除失敗，請稍後再試。");
+    console.error(error);
+  }
+}
+
 function escapeDevotionText(value) {
   return String(value)
     .replace(/&/g, "&amp;")
