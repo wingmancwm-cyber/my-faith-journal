@@ -1358,11 +1358,10 @@ async function openOtherEditor(id) {
         <label for="otherImage">圖片（最多一張，5 MB 以下）</label>
 
         <input
-          id="otherImage"
-          type="file"
-          accept="image/*"
-          capture="environment"
-        >
+  id="otherImage"
+  type="file"
+  accept="image/*"
+>
 
         <p class="devotion-save-status">
           可以從相簿選取圖片，或使用相機拍攝。
