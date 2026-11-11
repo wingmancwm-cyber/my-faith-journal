@@ -1360,6 +1360,66 @@ async function openBibleNoteEditor(id) {
 }
 
 // ==============================
+// 讀經筆記：儲存
+// ==============================
+
+async function saveBibleNote() {
+  const date = document.getElementById("bibleNoteDate").value;
+  const scripture = document.getElementById("bibleNoteScripture").value.trim();
+  const content = document.getElementById("bibleNoteContent").value.trim();
+
+  const status = document.getElementById("bibleNoteSaveStatus");
+  const saveButton = document.getElementById("saveBibleNoteButton");
+
+  if (!scripture || !content) {
+    status.textContent = "請填寫經文範圍及讀經筆記。";
+    return;
+  }
+
+  const newId =
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : Date.now().toString();
+
+  const note = {
+    id: saveButton.dataset.editingId || newId,
+    category: "bible",
+    date,
+    scripture,
+    content
+  };
+
+  saveButton.disabled = true;
+  status.textContent = "正在儲存……";
+
+  try {
+    await saveNote(note);
+    await renderBibleNotes();
+  } catch (error) {
+    status.textContent = "儲存失敗，請稍後再試。";
+    saveButton.disabled = false;
+    console.error(error);
+  }
+}
+
+// ==============================
+// 讀經筆記：刪除
+// ==============================
+
+async function deleteBibleNote(id) {
+  if (!confirm("確定要刪除這篇讀經筆記嗎？")) return;
+
+  try {
+    await deleteNote(id);
+    await renderBibleNotes();
+  } catch (error) {
+    alert("刪除失敗，請稍後再試。");
+    console.error(error);
+  }
+}
+
+// ==============================
 // 其他：自由筆記列表
 // ==============================
 
