@@ -1281,16 +1281,11 @@ function renderRecordsCategory(category) {
   }
 
   // 其他：暫時保留提示頁面
-  if (category === "other") {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-illustration">✧</div>
-        <h2>留下一些其他筆記</h2>
-        <p>記下生活中的信仰反思、想法及其他內容。</p>
-        <p>下一階段將加入新增及管理紀錄功能。</p>
-      </div>
-    `;
-  }
+  // 其他：顯示自由筆記
+if (category === "other") {
+  renderOtherRecords();
+  return;
+}
 }
 
 // 分類按鈕操作
