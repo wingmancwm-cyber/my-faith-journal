@@ -2426,83 +2426,130 @@ async function exportBackup() {
     button.disabled = false;
   }
 }
-async function exportBackup() {
-  const button = document.getElementById("exportBackupButton");
-  const status = document.getElementById("backupStatus");
 
-  if (!databaseReady) {
-    status.textContent = "資料庫尚未準備好，請稍後再試。";
-    return;
-  }
+document
+  .getElementById("exportBackupButton")
+  .addEventListener("click", exportBackup);
 
+async function inspectBackupZip(file) {
   if (typeof JSZip === "undefined") {
-    status.textContent = "ZIP 工具尚未載入，請確認網絡連線。";
-    return;
+    throw new Error("ZIP 工具尚未載入。");
   }
 
-  button.disabled = true;
-  status.textContent = "正在製作完整備份，請稍候……";
-
-  try {
-    const blob = await createBackupZip();
-
-    const date = new Date();
-    const dateText =
-      date.getFullYear() +
-      "-" +
-      String(date.getMonth() + 1).padStart(2, "0") +
-      "-" +
-      String(date.getDate()).padStart(2, "0");
-
-    const fileName = "恩典手帳備份-" + dateText + ".zip";
-
-    const file = new File([blob], fileName, {
-      type: "application/zip"
-    });
-
-    if (
-      navigator.share &&
-      navigator.canShare &&
-      navigator.canShare({ files: [file] })
-    ) {
-      await navigator.share({
-        files: [file],
-        title: "恩典手帳完整備份"
-      });
-
-      status.textContent = "已開啟分享選單，請選擇「儲存到檔案」保存備份。";
-    } else {
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
-
-      status.textContent = "備份檔案已準備，請確認已保存到 iPhone 的「檔案」App。";
-    }
-  } catch (error) {
-    if (error.name === "AbortError") {
-      status.textContent = "你已取消分享，備份資料沒有改變。";
-    } else {
-      console.error(error);
-      status.textContent = "備份失敗：" + error.message;
-    }
-  } finally {
-    button.disabled = false;
+  if (!file || !file.name.toLowerCase().endsWith(".zip")) {
+    throw new Error("請選擇 ZIP 備份檔案。");
   }
+
+  const zip = await JSZip.loadAsync(file);
+
+  const requiredFiles = [
+    "backup-info.json",
+    "bibleProgress.json",
+    "devotionRecords.json",
+    "notes.json"
+  ];
+
+  for (const fileName of requiredFiles) {
+    if (!zip.file(fileName)) {
+      throw new Error("備份檔案缺少：" + fileName);
+    }
+  }
+
+  const info = JSON.parse(
+    await zip.file("backup-info.json").async("string")
+  );
+
+  if (
+    info.format !== "my-faith-journal-backup" ||
+    info.formatVersion !== 1
+  ) {
+    throw new Error("這不是有效的恩典手帳備份格式。");
+  }
+
+  const bibleProgress = JSON.parse(
+    await zip.file("bibleProgress.json").async("string")
+  );
+
+  const devotionRecords = JSON.parse(
+    await zip.file("devotionRecords.json").async("string")
+  );
+
+  const notes = JSON.parse(
+    await zip.file("notes.json").async("string")
+  );
+
+  if (
+    !Array.isArray(bibleProgress) ||
+    !Array.isArray(devotionRecords) ||
+    !Array.isArray(notes)
+  ) {
+    throw new Error("備份資料格式不正確。");
+  }
+
+  if (
+    !bibleProgress.every(item => item && item.id != null) ||
+    !devotionRecords.every(item => item && item.date) ||
+    !notes.every(item => item && item.id != null)
+  ) {
+    throw new Error("備份內有紀錄缺少必要的識別資料。");
+  }
+
+  let imageCount = 0;
+
+  for (const note of notes) {
+    if (note.imageFile) {
+      if (!zip.file(note.imageFile)) {
+        throw new Error("備份缺少圖片：" + note.imageFile);
+      }
+
+      imageCount++;
+    }
+  }
+
+  return {
+    zip,
+    info,
+    bibleProgress,
+    devotionRecords,
+    notes,
+    imageCount
+  };
 }
 
 document
-  .getElementById("exportBackupButton")
-  .addEventListener("click", exportBackup);
-document
-  .getElementById("exportBackupButton")
-  .addEventListener("click", exportBackup);
+  .getElementById("importBackupFile")
+  .addEventListener("change", async function(event) {
+    const file = event.target.files[0];
+    const status = document.getElementById("backupStatus");
+
+    if (!file) return;
+
+    status.textContent = "正在檢查備份檔案……";
+
+    try {
+      const backup = await inspectBackupZip(file);
+      const counts = backup.info.counts || {};
+
+      const backupDate = backup.info.createdAt
+        ? new Date(backup.info.createdAt).toLocaleString("zh-HK")
+        : "未有記錄";
+
+      status.textContent =
+        "備份檔案有效！\n" +
+        "備份日期：" + backupDate + "\n" +
+        "讀經進度：" + backup.bibleProgress.length + " 筆\n" +
+        "靈修紀錄：" + backup.devotionRecords.length + " 筆\n" +
+        "其他筆記：" + backup.notes.length + " 筆\n" +
+        "圖片：" + backup.imageCount + " 張\n" +
+        "已完成檢查，現有資料尚未作出任何修改。";
+
+    } catch (error) {
+      console.error(error);
+      status.textContent = "備份檔案無效或不完整：" + error.message;
+    }
+
+    event.target.value = "";
+  });
 // ==============================
 // Service Worker：離線支援
 // ==============================
