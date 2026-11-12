@@ -2550,6 +2550,92 @@ document
 
     event.target.value = "";
   });
+
+async function restoreBackupData(backup) {
+  if (!databaseReady || !db) {
+    throw new Error("資料庫尚未準備好，請稍後再試。");
+  }
+
+  // 先在交易開始前，將 ZIP 圖片還原為 Blob
+  const restoredNotes = [];
+
+  for (const note of backup.notes) {
+    const {
+      imageFile,
+      imageType,
+      ...noteData
+    } = note;
+
+    if (imageFile) {
+      const imageEntry = backup.zip.file(imageFile);
+
+      if (!imageEntry) {
+        throw new Error("找不到備份圖片：" + imageFile);
+      }
+
+      const imageData = await imageEntry.async("uint8array");
+
+      noteData.image = new Blob(
+        [imageData],
+        {
+          type: imageType || "application/octet-stream"
+        }
+      );
+    }
+
+    restoredNotes.push(noteData);
+  }
+
+  // 所有資料準備完成後，才開始資料庫交易
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(
+      [
+        BIBLE_STORE_NAME,
+        DEVOTION_STORE_NAME,
+        NOTES_STORE_NAME
+      ],
+      "readwrite"
+    );
+
+    const bibleStore = transaction.objectStore(BIBLE_STORE_NAME);
+    const devotionStore = transaction.objectStore(DEVOTION_STORE_NAME);
+    const notesStore = transaction.objectStore(NOTES_STORE_NAME);
+
+    bibleStore.clear();
+    devotionStore.clear();
+    notesStore.clear();
+
+    backup.bibleProgress.forEach(record => {
+      bibleStore.put(record);
+    });
+
+    backup.devotionRecords.forEach(record => {
+      devotionStore.put(record);
+    });
+
+    restoredNotes.forEach(record => {
+      notesStore.put(record);
+    });
+
+    transaction.oncomplete = () => {
+      resolve();
+    };
+
+    transaction.onerror = () => {
+      reject(
+        transaction.error ||
+        new Error("還原資料時發生錯誤。")
+      );
+    };
+
+    transaction.onabort = () => {
+      reject(
+        transaction.error ||
+        new Error("還原交易已中止，原有資料應維持不變。")
+      );
+    };
+  });
+}
 // ==============================
 // Service Worker：離線支援
 // ==============================
