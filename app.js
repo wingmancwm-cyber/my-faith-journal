@@ -2426,7 +2426,80 @@ async function exportBackup() {
     button.disabled = false;
   }
 }
+async function exportBackup() {
+  const button = document.getElementById("exportBackupButton");
+  const status = document.getElementById("backupStatus");
 
+  if (!databaseReady) {
+    status.textContent = "資料庫尚未準備好，請稍後再試。";
+    return;
+  }
+
+  if (typeof JSZip === "undefined") {
+    status.textContent = "ZIP 工具尚未載入，請確認網絡連線。";
+    return;
+  }
+
+  button.disabled = true;
+  status.textContent = "正在製作完整備份，請稍候……";
+
+  try {
+    const blob = await createBackupZip();
+
+    const date = new Date();
+    const dateText =
+      date.getFullYear() +
+      "-" +
+      String(date.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(date.getDate()).padStart(2, "0");
+
+    const fileName = "恩典手帳備份-" + dateText + ".zip";
+
+    const file = new File([blob], fileName, {
+      type: "application/zip"
+    });
+
+    if (
+      navigator.share &&
+      navigator.canShare &&
+      navigator.canShare({ files: [file] })
+    ) {
+      await navigator.share({
+        files: [file],
+        title: "恩典手帳完整備份"
+      });
+
+      status.textContent = "已開啟分享選單，請選擇「儲存到檔案」保存備份。";
+    } else {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+
+      status.textContent = "備份檔案已準備，請確認已保存到 iPhone 的「檔案」App。";
+    }
+  } catch (error) {
+    if (error.name === "AbortError") {
+      status.textContent = "你已取消分享，備份資料沒有改變。";
+    } else {
+      console.error(error);
+      status.textContent = "備份失敗：" + error.message;
+    }
+  } finally {
+    button.disabled = false;
+  }
+}
+
+document
+  .getElementById("exportBackupButton")
+  .addEventListener("click", exportBackup);
 document
   .getElementById("exportBackupButton")
   .addEventListener("click", exportBackup);
