@@ -2284,7 +2284,78 @@ function readAllBackupStores() {
     };
   });
 }
+async function createBackupZip() {
+  if (typeof JSZip === "undefined") {
+    throw new Error("ZIP 備份工具尚未載入，請確認網絡連線。");
+  }
 
+  const data = await readAllBackupStores();
+  const zip = new JSZip();
+
+  const notesForBackup = [];
+
+  let imageCount = 0;
+
+  for (let i = 0; i < data.notes.length; i++) {
+    const note = data.notes[i];
+    const { image, ...noteData } = note;
+
+    if (image instanceof Blob) {
+      const imageFileName =
+        "images/image-" +
+        String(imageCount + 1).padStart(4, "0") +
+        ".bin";
+
+      zip.file(imageFileName, image);
+
+      noteData.imageFile = imageFileName;
+      noteData.imageType = image.type || "application/octet-stream";
+
+      imageCount++;
+    }
+
+    notesForBackup.push(noteData);
+  }
+
+  zip.file(
+    "bibleProgress.json",
+    JSON.stringify(data.bibleProgress, null, 2)
+  );
+
+  zip.file(
+    "devotionRecords.json",
+    JSON.stringify(data.devotionRecords, null, 2)
+  );
+
+  zip.file(
+    "notes.json",
+    JSON.stringify(notesForBackup, null, 2)
+  );
+
+  zip.file(
+    "backup-info.json",
+    JSON.stringify({
+      format: "my-faith-journal-backup",
+      formatVersion: 1,
+      appDatabaseVersion: DB_VERSION,
+      createdAt: new Date().toISOString(),
+      counts: {
+        bibleProgress: data.bibleProgress.length,
+        devotionRecords: data.devotionRecords.length,
+        notes: data.notes.length,
+        images: imageCount
+      }
+    }, null, 2)
+  );
+
+  return await zip.generateAsync({
+    type: "blob",
+    compression: "DEFLATE",
+    compressionOptions: {
+      level: 6
+    }
+  });
+}
 // ==============================
 // Service Worker：離線支援
 // ==============================
