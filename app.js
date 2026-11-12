@@ -2234,7 +2234,56 @@ async function initialiseBible() {
 }
 
 initialiseBible();
+function readAllBackupStores() {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(
+      [
+        BIBLE_STORE_NAME,
+        DEVOTION_STORE_NAME,
+        NOTES_STORE_NAME
+      ],
+      "readonly"
+    );
 
+    const bibleRequest = transaction
+      .objectStore(BIBLE_STORE_NAME)
+      .getAll();
+
+    const devotionRequest = transaction
+      .objectStore(DEVOTION_STORE_NAME)
+      .getAll();
+
+    const notesRequest = transaction
+      .objectStore(NOTES_STORE_NAME)
+      .getAll();
+
+    const result = {};
+
+    bibleRequest.onsuccess = () => {
+      result.bibleProgress = bibleRequest.result || [];
+    };
+
+    devotionRequest.onsuccess = () => {
+      result.devotionRecords = devotionRequest.result || [];
+    };
+
+    notesRequest.onsuccess = () => {
+      result.notes = notesRequest.result || [];
+    };
+
+    transaction.oncomplete = () => {
+      resolve(result);
+    };
+
+    transaction.onerror = () => {
+      reject(transaction.error || new Error("讀取備份資料失敗。"));
+    };
+
+    transaction.onabort = () => {
+      reject(transaction.error || new Error("備份資料讀取已中止。"));
+    };
+  });
+}
 
 // ==============================
 // Service Worker：離線支援
