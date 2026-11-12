@@ -2516,6 +2516,7 @@ async function inspectBackupZip(file) {
   };
 }
 
+
 document
   .getElementById("importBackupFile")
   .addEventListener("change", async function(event) {
@@ -2528,28 +2529,47 @@ document
 
     try {
       const backup = await inspectBackupZip(file);
-      const counts = backup.info.counts || {};
-
       const backupDate = backup.info.createdAt
         ? new Date(backup.info.createdAt).toLocaleString("zh-HK")
         : "未有記錄";
 
-      status.textContent =
-        "備份檔案有效！\n" +
-        "備份日期：" + backupDate + "\n" +
+      const message =
+        "已找到有效的恩典手帳備份！\n\n" +
+        "備份日期：" + backupDate + "\n\n" +
         "讀經進度：" + backup.bibleProgress.length + " 筆\n" +
         "靈修紀錄：" + backup.devotionRecords.length + " 筆\n" +
         "其他筆記：" + backup.notes.length + " 筆\n" +
-        "圖片：" + backup.imageCount + " 張\n" +
-        "已完成檢查，現有資料尚未作出任何修改。";
+        "圖片：" + backup.imageCount + " 張\n\n" +
+        "注意：還原會完全取代目前裝置內的所有紀錄，並不會合併資料。\n\n" +
+        "建議先匯出目前資料作備份。\n\n" +
+        "確定要覆蓋目前所有資料嗎？";
+
+      if (!confirm(message)) {
+        status.textContent = "已取消還原，目前資料沒有改變。";
+        return;
+      }
+
+      status.textContent = "正在還原資料，請勿關閉 App……";
+
+      await restoreBackupData(backup);
+
+      status.textContent = "還原成功！正在重新載入 App……";
+
+      setTimeout(() => {
+        location.reload();
+      }, 1000);
 
     } catch (error) {
       console.error(error);
-      status.textContent = "備份檔案無效或不完整：" + error.message;
-    }
+      status.textContent =
+        "還原失敗：" + error.message +
+        "。請檢查備份檔案，原有資料不應因失敗交易而被部分覆蓋。";
 
-    event.target.value = "";
+    } finally {
+      event.target.value = "";
+    }
   });
+
 
 async function restoreBackupData(backup) {
   if (!databaseReady || !db) {
