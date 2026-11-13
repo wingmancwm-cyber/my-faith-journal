@@ -1,10 +1,11 @@
-const CACHE_NAME = "faith-journal-shell-v13";
+const CACHE_NAME = "faith-journal-shell-v14";
 
 const FILES = [
   "./",
   "./index.html",
   "./style.css",
   "./app.js",
+  "./jszip.min.js",
   "./manifest.json"
 ];
 
